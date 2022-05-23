@@ -1,0 +1,11 @@
+# Dockerfile for Database
+
+FROM mariadb:10.6.4-focal
+ARG DEBIAN_FRONTEND=noninteractive
+
+ENV MYSQL_ROOT_USER=team3
+ENV MYSQL_ROOT_PASSWORD=1234
+ENV MYSQL_DATABASE=Messenger
+ENV TZ=Asia/Seoul
+
+EXPOSE 3306:3306
