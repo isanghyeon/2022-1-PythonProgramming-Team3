@@ -30,8 +30,37 @@
 
 from flask import g
 from flask_restx import Resource, fields, Namespace, model
-import sys, os, json
+import sys, os, json, datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 ns = Namespace('api/users', description='User information operator')
+
+userNSModel = ns.model(
+    "user api model",
+    {
+        "id": fields.Integer(readonly=True, descriptio=""),
+        "UserUniqKey": fields.String(required=True, description=""),
+        "UserName": fields.String(required=True, description=""),
+        "UserAccountID": fields.String(required=True, description=""),
+        "UserAccountPW": fields.String(required=True, description=""),
+        "LastLoginTimestamp": fields.DateTime(required=True, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+        "CreateTimestamp": fields.DateTime(required=True, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    }
+)
+
+responseModel = ns.model(
+    "response api model",
+    {
+        "status": fields.String(readonly=True, description="")
+        "message": fields.String(readonly=True, description="")
+    }
+)
+
+class userDAO(object):
+    def __init__(self):
+        pass
+
+
+@ns.route()
+class

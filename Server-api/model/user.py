@@ -40,7 +40,7 @@ class user(UserModel.Model):
     __bind_key__ = 'user'
 
     id = UserModel.Column(UserModel.INTEGER, primary_key=True, autoincrement=True)
-    UserUniqKeyHash = UserModel.Column(UserModel.String(100), unique=True, nullable=False)
+    UserUniqKey = UserModel.Column(UserModel.String(100), unique=True, nullable=False)
     UserName = UserModel.Column(UserModel.String(50), nullable=False)
     UserAccountID = UserModel.Column(UserModel.String(50), unique=True, nullable=False)
     UserAccountPW = UserModel.Column(UserModel.String(88), nullable=False)

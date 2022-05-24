@@ -1,0 +1,25 @@
+{
+  "Signature": "Python Programming Project 3 Team",
+  "Last-modification-date": "2022-05-24",
+  "API-documentation": {
+    "users": {
+      "User-model": {
+        "id": "",
+        "UserUniqKey": "",
+        "UserName": "",
+        "UserAccountID": "",
+        "UserAccountPW": "",
+        "LastLoginTimestamp": "",
+        "CreateAccountTimestamp": ""
+      },
+      "User-api-response": {
+        "status": "",
+        "messages": ""
+      }
+    },
+    "messages": {
+    },
+    "media": {
+    }
+  }
+}

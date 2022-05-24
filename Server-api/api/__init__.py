@@ -31,6 +31,8 @@
 from flask import Blueprint
 from flask_restx import Api
 
+from .users import ns as user_namespace
+
 NAME = 'api'
 bp = Blueprint(
     NAME,
@@ -45,4 +47,4 @@ api = Api(
     description='Python Programming Messenger Service Develop'
 )
 
-api.add_namespace()
+api.add_namespace(user_namespace)
