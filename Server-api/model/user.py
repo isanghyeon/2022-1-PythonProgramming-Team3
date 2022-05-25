@@ -44,5 +44,5 @@ class user(UserModel.Model):
     UserName = UserModel.Column(UserModel.String(50), nullable=False)
     UserAccountID = UserModel.Column(UserModel.String(50), unique=True, nullable=False)
     UserAccountPW = UserModel.Column(UserModel.String(88), nullable=False)
-    LastLoginTimestamp = UserModel.Column(UserModel.TIMESTAMP("KST"), default="1970-01-01T00:00:00")
-    CreateTimestamp = UserModel.Column(UserModel.TIMESTAMP("KST"), default="1970-01-01T00:00:00")
+    LastLoginTimestamp = UserModel.Column(UserModel.TIMESTAMP(timezone="KST"), default="1970-01-01T00:00:00")
+    CreateTimestamp = UserModel.Column(UserModel.TIMESTAMP(timezone="KST"), default="1970-01-01T00:00:00")

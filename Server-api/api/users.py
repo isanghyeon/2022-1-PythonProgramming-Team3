@@ -52,15 +52,44 @@ userNSModel = ns.model(
 responseModel = ns.model(
     "response api model",
     {
-        "status": fields.String(readonly=True, description="")
+        "status": fields.String(readonly=True, description=""),
         "message": fields.String(readonly=True, description="")
     }
 )
 
+
 class userDAO(object):
     def __init__(self):
-        pass
+        self.selectData = None
+        self.insertData = None
 
 
-@ns.route()
-class
+@ns.route('')
+class userAdd(Resource):
+    """ADD NEW USER"""
+
+    # @ns.doc('List of all ports data')
+    # @ns.marshal_list_with(ports)
+    # def get(self):
+    #     """Shows Ports data"""
+    #     return data_access_object_for_ports.get(id=None, Type=False)
+
+    @ns.doc('ADD NEW USER')
+    @ns.expect(userNSModel)
+    @ns.marshal_with(responseModel)
+    def post(self):
+        """Create Ports scanning result"""
+        return data_access_object_for_ports.create(ns.payload)
+
+
+@ns.route('/<string:uniqueKey>')
+@ns.response(404, 'user not found')
+@ns.param('uniqueKey', 'user id for unique identifier')
+class userInformation(Resource):
+    """Show a single Ports item"""
+
+    @ns.doc('Get single Ports')
+    @ns.marshal_list_with(userNSModel)
+    def get(self, uniqueKey):
+        """Fetch a given resource"""
+        return data_access_object_for_ports.get(uniqueKey)
