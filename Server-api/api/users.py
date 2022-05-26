@@ -34,9 +34,12 @@ import sys, os, json, datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from .customResponse import CustomizeResponse
+from model.user import user as userDBSchema
+
 ns = Namespace('api/users', description='User information operator')
 
-userNSModel = ns.model(
+userNSBaseModel = ns.model(
     "user api model",
     {
         "id": fields.Integer(readonly=True, descriptio=""),
@@ -44,8 +47,16 @@ userNSModel = ns.model(
         "UserName": fields.String(required=True, description=""),
         "UserAccountID": fields.String(required=True, description=""),
         "UserAccountPW": fields.String(required=True, description=""),
-        "LastLoginTimestamp": fields.DateTime(required=True, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-        "CreateTimestamp": fields.DateTime(required=True, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        "LastLoginTimestamp": fields.DateTime(required=True, description=""),
+        "CreateTimestamp": fields.DateTime(required=True, description="")
+    }
+)
+
+userNSUpdateLoginTimeModel = ns.model(
+    "user api model update login time",
+    {
+        "id": fields.Integer(readonly=True, descriptio=""),
+        "LastLoginTimestamp": fields.DateTime(required=True, description="")
     }
 )
 
@@ -62,34 +73,91 @@ class userDAO(object):
     def __init__(self):
         self.selectData = None
         self.insertData = None
+        self.updateData = None
+
+    def get(self, uniqueKey):
+        self.selectData = g.MessengerDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == uniqueKey).first()
+
+        if not self.selectData:
+            ns.abort(404, f"user doesn't exist")
+
+        return self.selectData
+
+    def create(self, data):
+        try:
+            self.insertData = data
+
+            g.MessengerDB.add(
+                userDBSchema(
+                    UserUniqKey=self.insertData["UserUniqKey"],
+                    UserName=self.insertData["UserName"],
+                    UserAccountID=self.insertData["UserAccountID"],
+                    UserAccountPW=self.insertData["UserAccountPW"],
+                    LastLoginTimestamp=self.insertData["LastLoginTimestamp"],
+                    CreateTimestamp=self.insertData["CreateTimestamp"]
+                )
+            )
+            g.MessengerDB.commit()
+
+            return CustomizeResponse().return_post_http_status_message(Type=True)
+        except Exception as e:
+            print(e)
+            g.MessengerDB.rollback()
+
+        return CustomizeResponse().return_post_http_status_message(Type=False)
+
+    def update(self, data, uniqueKey):
+        if not self.get(uniqueKey):
+            pass
+
+        try:
+            self.updateData = data
+
+            g.MessengerDB.query(userDBSchema).filter(
+                userDBSchema.UserUniqKey == uniqueKey
+            ).update(
+                {'LastLoginTimestamp': self.updateData["LastLoginTimestamp"]}
+            )
+
+            g.MessengerDB.commit()
+
+            return CustomizeResponse().return_patch_http_status_message(Type=True)
+        except Exception as e:
+            g.MessengerDB.rollback()
+
+        return CustomizeResponse().return_patch_http_status_message(Type=False)
+
+
+DAOForUser = userDAO()
 
 
 @ns.route('')
 class userAdd(Resource):
     """ADD NEW USER"""
 
-    # @ns.doc('List of all ports data')
-    # @ns.marshal_list_with(ports)
-    # def get(self):
-    #     """Shows Ports data"""
-    #     return data_access_object_for_ports.get(id=None, Type=False)
-
     @ns.doc('ADD NEW USER')
-    @ns.expect(userNSModel)
+    @ns.expect(userNSBaseModel)
     @ns.marshal_with(responseModel)
     def post(self):
-        """Create Ports scanning result"""
-        return data_access_object_for_ports.create(ns.payload)
+        """Create New User"""
+        return DAOForUser.create(ns.payload)
 
 
 @ns.route('/<string:uniqueKey>')
 @ns.response(404, 'user not found')
 @ns.param('uniqueKey', 'user id for unique identifier')
 class userInformation(Resource):
-    """Show a single Ports item"""
+    """Show a single item"""
 
-    @ns.doc('Get single Ports')
-    @ns.marshal_list_with(userNSModel)
+    @ns.doc('GET USER')
+    @ns.marshal_with(userNSBaseModel)
     def get(self, uniqueKey):
         """Fetch a given resource"""
-        return data_access_object_for_ports.get(uniqueKey)
+        return DAOForUser.get(uniqueKey=uniqueKey)
+
+    @ns.doc('UPDATE EXIST USER')
+    @ns.expect(userNSUpdateLoginTimeModel)
+    @ns.marshal_with(responseModel)
+    def patch(self, uniqueKey):
+        """Update Existing User"""
+        return DAOForUser.update(ns.payload, uniqueKey=uniqueKey)

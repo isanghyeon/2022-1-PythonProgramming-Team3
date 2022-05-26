@@ -14,7 +14,7 @@
     in the Software without restriction, including without limitation the rights
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditio :
+    furnished to do so, subject to the following conditions:
 
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
@@ -28,41 +28,33 @@
     THE SOFTWARE.
 """
 
-import os
-
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-
-
-class Config(object):
-    """
-        Flask Config
-    """
-    SECRET_KEY = os.urandom(16)
-    SESSION_COOKIE_NAME = 'BWASP'
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:1234@localhost/Messenger?charset=utf8"
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    ERROR_404_HELP = False
-    SWAGGER_UI_DOC_EXPANSION = 'list'
-
-    def __init__(self):
-        pass
-        """
-        environ_db = os.environ.get("SQLALCHEMY_DATABASE_URI")
-        if environ_db:
-            self.SQLALCHEMY_BINDS["BWASP"] = environ_db
-        """
+import socket
+import threading
 
 
-class Developments_config(Config):
-    """
-        Flask Config for Development
-    """
-    DEBUG = True
+def Send(client_sock):
+    while True:
+        send_data = bytes(
+            input().encode()
+        )
+        client_sock.send(send_data)
 
 
-class Production_config(Config):
-    """
-        Flask Config for Production
-    """
-    pass
+def Recv(client_sock):
+    while True:
+        recv_data = client_sock.recv(1024).decode()
+        print(recv_data)
+
+
+if __name__ == '__main__':
+    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Host = 'localhost'
+    Port = 9000
+    client_sock.connect((Host, Port))
+    print(f"Connected to {Host}:{Port}")
+
+    thread1 = threading.Thread(target=Send, args=(client_sock,))
+    thread1.start()
+
+    thread2 = threading.Thread(target=Recv, args=(client_sock,))
+    thread2.start()

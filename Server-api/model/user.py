@@ -37,12 +37,23 @@ from . import MessengerDB as UserModel
 
 class user(UserModel.Model):
     __tablename__ = 'user'
-    __bind_key__ = 'user'
+    # __bind_key__ = 'user'
 
     id = UserModel.Column(UserModel.INTEGER, primary_key=True, autoincrement=True)
-    UserUniqKey = UserModel.Column(UserModel.String(100), unique=True, nullable=False)
-    UserName = UserModel.Column(UserModel.String(50), nullable=False)
-    UserAccountID = UserModel.Column(UserModel.String(50), unique=True, nullable=False)
-    UserAccountPW = UserModel.Column(UserModel.String(88), nullable=False)
-    LastLoginTimestamp = UserModel.Column(UserModel.TIMESTAMP(timezone="KST"), default="1970-01-01T00:00:00")
-    CreateTimestamp = UserModel.Column(UserModel.TIMESTAMP(timezone="KST"), default="1970-01-01T00:00:00")
+    UserUniqKey = UserModel.Column(UserModel.VARCHAR(100), unique=True, nullable=False)
+    UserName = UserModel.Column(UserModel.VARCHAR(50), nullable=False)
+    UserAccountID = UserModel.Column(UserModel.VARCHAR(50), unique=True, nullable=False)
+    UserAccountPW = UserModel.Column(UserModel.VARCHAR(88), nullable=False)
+    LastLoginTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    CreateTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    def __init__(self, UserUniqKey, UserName, UserAccountID, UserAccountPW, LastLoginTimestamp, CreateTimestamp, **kwargs):
+        self.UserUniqKey = UserUniqKey
+        self.UserName = UserName
+        self.UserAccountID = UserAccountID
+        self.UserAccountPW = UserAccountPW
+        self.LastLoginTimestamp = LastLoginTimestamp
+        self.CreateTimestamp = CreateTimestamp
+
+    def __repr__(self):
+        return f"<user('{self.UserUniqKey}', '{self.UserName}', '{self.UserAccountID}', '{self.UserAccountPW}', '{self.LastLoginTimestamp}', '{self.CreateTimestamp}')>"

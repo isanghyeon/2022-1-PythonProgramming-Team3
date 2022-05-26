@@ -12,7 +12,7 @@
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
     in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
     furnished to do so, subject to the following conditions:
 
@@ -35,9 +35,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 from flask_migrate import Migrate, migrate, upgrade, merge
 from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-migrate = Migrate()
+from model import MessengerDB
 
 
 def create_app(config=None):
@@ -47,7 +45,7 @@ def create_app(config=None):
     CORS(app, resource={r'/api/*': {"Access-Control-Allow-Credentials": True}})
 
     # Config initialization
-    from configs import Developments_config, Production_config
+    from config import Developments_config, Production_config
     if app.config['DEBUG']:
         config = Developments_config()
     else:
@@ -56,27 +54,25 @@ def create_app(config=None):
     app.config.from_object(config)
 
     # DATABASE API route initialization.
-    from apis import bp as api
+    from api import bp as api
     app.register_blueprint(api)
-
-    # DATABASE MANAGE API route initialization.
-    from task_managements import manage
-    app.register_blueprint(manage.bp)
 
     # App context initialization
     app.app_context().push()
 
     # Database initialization
+    MessengerDB.init_app(app)
+    MessengerDB.app = app
 
     @app.before_request
     def before_request():
         # g object session initialization
-        pass
+        g.MessengerDB = MessengerDB.session
 
     @app.teardown_request
     def teardown_request(exception):
-        if hasattr(g, 'Messenger'):
-            pass
+        if hasattr(g, 'MessengerDB'):
+            g.MessengerDB.close()
 
     return app
 
