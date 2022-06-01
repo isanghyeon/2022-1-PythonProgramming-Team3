@@ -98,7 +98,7 @@ class userDAO(object):
         return self.selectData
 
     def CreateUser(self, data: dict):
-        if self.GetUserInfo(user_uniqueKey):
+        if g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == data["UserName"]).first():
             return CustomizeResponse().return_post_http_status_message(Type=False)
 
         try:
@@ -117,6 +117,7 @@ class userDAO(object):
 
             return CustomizeResponse().return_post_http_status_message(Type=True)
         except Exception as e:
+            print(e)
             g.UserDB.rollback()
 
         return CustomizeResponse().return_post_http_status_message(Type=False)
@@ -155,7 +156,7 @@ class userAdd(Resource):
     @ns.marshal_with(responseModel)
     def post(self):
         """Create New User"""
-        return DAOForUser.create(ns.payload)
+        return DAOForUser.CreateUser(ns.payload)
 
 
 @ns.route('/<string:uname>/<string:upw>')
@@ -190,4 +191,4 @@ class userInformation(Resource):
     @ns.marshal_with(responseModel)
     def patch(self, user_uniqueKey):
         """Update Existing User"""
-        return DAOForUser.CreateUser(ns.payload, key=user_uniqueKey)
+        return DAOForUser.update(ns.payload, key=user_uniqueKey)

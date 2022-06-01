@@ -1,14 +1,14 @@
 SET GLOBAL general_log='ON';
 SET GLOBAL general_log_file='/tmp/general_activity.log';
 
--- auto-generated definition
-drop database if exists `users`;
-create schema `users` collate utf8mb4_general_ci;
+# -- auto-generated definition
+# drop database if exists `users`;
+# create schema `users` collate utf8mb4_general_ci;
 
-use users;
+# use users;
 
 -- auto-generated definition
-drop table if exists `user`;
+# drop table if exists `user`;
 create table `user`
 (
     id                 int auto_increment primary key,

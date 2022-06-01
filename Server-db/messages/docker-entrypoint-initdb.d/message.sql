@@ -1,13 +1,14 @@
 SET GLOBAL general_log='ON';
 SET GLOBAL general_log_file='/tmp/general_activity.log';
 
--- auto-generated definition
-drop database if exists `messages`;
-create schema `messages` collate utf8mb4_general_ci;
+# -- auto-generated definition
+# drop database if exists `messages`;
+# create schema `messages` collate utf8mb4_general_ci;
 
-use messages;
+# use messages;
+
 -- auto-generated definition
-drop table if exists `message`;
+# drop table if exists `message`;
 create table `message`
 (
     id                          int auto_increment primary key,
