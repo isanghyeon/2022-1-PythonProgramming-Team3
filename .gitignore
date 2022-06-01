@@ -3,3 +3,7 @@ venv/*
 .idea/
 GUI/*
 .DS_Store
+Client-core/user/account.py
+Client-core/server.py
+Client-core/feature/api.py
+Client-core/client-2.py
