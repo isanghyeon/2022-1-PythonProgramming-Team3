@@ -1,3 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 
-MessengerDB = SQLAlchemy()
+UserDB = SQLAlchemy()
+MsgDB = SQLAlchemy()
+ChatDB = SQLAlchemy()

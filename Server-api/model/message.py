@@ -32,13 +32,30 @@ import sys, os, datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from . import MessengerDB as MessageModel
+from . import MsgDB as MessageModel
 
 
-class user(MessageModel.Model):
+class message(MessageModel.Model):
     __tablename__ = 'message'
-    __bind_key__ = 'message'
+    __bind_key__ = 'messages'
 
     id = MessageModel.Column(MessageModel.INTEGER, primary_key=True, autoincrement=True)
-    MessageUniqKeyHash = MessageModel.Column(MessageModel.String(100), unique=True, nullable=False)
+    UserUniqKey = MessageModel.Column(MessageModel.VARCHAR(100), nullable=False)
+    ChatUniqKey = MessageModel.Column(MessageModel.VARCHAR(100), nullable=False)
+    UserName = MessageModel.Column(MessageModel.VARCHAR(50), nullable=False)
+    MessageType = MessageModel.Column(MessageModel.BOOLEAN, default=0, nullable=True)
+    MessageData = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
+    MediaDataPath = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
+    MessageTimestamp = MessageModel.Column(MessageModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
+    def __init__(self, UserUniqKey, ChatUniqKey, UserName, MessageType, MessageData, MediaDataPath, MessageTimestamp, **kwargs):
+        self.UserUniqKey = UserUniqKey
+        self.ChatUniqKey = ChatUniqKey
+        self.UserName = UserName
+        self.MessageType = MessageType
+        self.MessageData = MessageData
+        self.MediaDataPath = MediaDataPath
+        self.MessageTimestamp = MessageTimestamp
+
+    def __repr__(self):
+        return f"<user('{self.UserUniqKey}', '{self.ChatUniqKey}', '{self.UserName}', '{self.MessageType}', '{self.MessageData}', '{self.MediaDataPath}', '{self.MessageTimestamp}')>"

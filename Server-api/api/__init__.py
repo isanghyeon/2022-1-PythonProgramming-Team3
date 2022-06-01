@@ -32,6 +32,8 @@ from flask import Blueprint
 from flask_restx import Api
 
 from .users import ns as user_namespace
+from .messages import ns as msg_namespace
+from .chatroom import ns as chat_namespace
 
 NAME = 'api'
 bp = Blueprint(
@@ -48,3 +50,5 @@ api = Api(
 )
 
 api.add_namespace(user_namespace)
+api.add_namespace(msg_namespace)
+api.add_namespace(chat_namespace)

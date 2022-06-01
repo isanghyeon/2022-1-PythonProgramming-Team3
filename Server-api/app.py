@@ -35,7 +35,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
 from flask_migrate import Migrate, migrate, upgrade, merge
 from flask_sqlalchemy import SQLAlchemy
-from model import MessengerDB
+from model import UserDB, MsgDB, ChatDB
 
 
 def create_app(config=None):
@@ -61,22 +61,36 @@ def create_app(config=None):
     app.app_context().push()
 
     # Database initialization
-    MessengerDB.init_app(app)
-    MessengerDB.app = app
+    UserDB.init_app(app)
+    UserDB.app = app
+
+    MsgDB.init_app(app)
+    MsgDB.app = app
+
+    ChatDB.init_app(app)
+    ChatDB.app = app
 
     @app.before_request
     def before_request():
         # g object session initialization
-        g.MessengerDB = MessengerDB.session
+        g.UserDB = UserDB.session
+        g.MsgDB = MsgDB.session
+        g.ChatDB = ChatDB.session
 
     @app.teardown_request
     def teardown_request(exception):
-        if hasattr(g, 'MessengerDB'):
-            g.MessengerDB.close()
+        if hasattr(g, 'UserDB'):
+            g.UserDB.close()
+
+        if hasattr(g, 'MsgDB'):
+            g.MsgDB.close()
+
+        if hasattr(g, 'ChatDB'):
+            g.ChatDB.close()
 
     return app
 
 
 if __name__ == '__main__':
     application = create_app()
-    application.run(host="0.0.0.0", port=20102, debug=True)
+    application.run(host="192.168.0.6", port=5000, debug=True)

@@ -32,28 +32,26 @@ import sys, os, datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from . import MessengerDB as UserModel
+from . import UserDB as UserModel
 
 
 class user(UserModel.Model):
     __tablename__ = 'user'
-    # __bind_key__ = 'user'
+    __bind_key__ = 'users'
 
     id = UserModel.Column(UserModel.INTEGER, primary_key=True, autoincrement=True)
     UserUniqKey = UserModel.Column(UserModel.VARCHAR(100), unique=True, nullable=False)
     UserName = UserModel.Column(UserModel.VARCHAR(50), nullable=False)
-    UserAccountID = UserModel.Column(UserModel.VARCHAR(50), unique=True, nullable=False)
     UserAccountPW = UserModel.Column(UserModel.VARCHAR(88), nullable=False)
     LastLoginTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     CreateTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def __init__(self, UserUniqKey, UserName, UserAccountID, UserAccountPW, LastLoginTimestamp, CreateTimestamp, **kwargs):
+    def __init__(self, UserUniqKey, UserName, UserAccountPW, LastLoginTimestamp, CreateTimestamp, **kwargs):
         self.UserUniqKey = UserUniqKey
         self.UserName = UserName
-        self.UserAccountID = UserAccountID
         self.UserAccountPW = UserAccountPW
         self.LastLoginTimestamp = LastLoginTimestamp
         self.CreateTimestamp = CreateTimestamp
 
     def __repr__(self):
-        return f"<user('{self.UserUniqKey}', '{self.UserName}', '{self.UserAccountID}', '{self.UserAccountPW}', '{self.LastLoginTimestamp}', '{self.CreateTimestamp}')>"
+        return f"<user('{self.UserUniqKey}', '{self.UserName}', '{self.UserAccountPW}', '{self.LastLoginTimestamp}', '{self.CreateTimestamp}')>"
