@@ -93,4 +93,4 @@ def create_app(config=None):
 
 if __name__ == '__main__':
     application = create_app()
-    application.run(host="0.0.0.0", port=80, debug=True)  # 40010
+    application.run(host="0.0.0.0", port=80, debug=False)  # 40010

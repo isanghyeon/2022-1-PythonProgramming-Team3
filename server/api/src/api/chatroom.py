@@ -30,12 +30,15 @@
 
 from flask import g
 from flask_restx import Resource, fields, Namespace, model
-import sys, os, json, datetime
+import sys, os, json, datetime, hashlib, time
+from sqlalchemy import func
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from .customResponse import CustomizeResponse
+from .customField import StringToJSON
 from model.chatroom import chatroom as chatroomDBSchema
+from model.user import user as userDBSchema
 
 ns = Namespace('api/chat/room', description='Chat information operator')
 
@@ -43,52 +46,12 @@ chatNSBaseModel = ns.model(
     "chat api model",
     {
         "id": fields.Integer(readonly=True, descriptio=""),
-        "ChatUniqKey": fields.String(required=True, description=""),
-        "ParticipantUName": fields.String(required=True, description=""),
-        "ParticipantUniqKey": fields.String(required=True, description=""),
-        "NewUserParicipatedTimestamp": fields.DateTime(required=True, description=""),
-        "LastChatTimestamp": fields.DateTime(required=True, description=""),
-        "CreateTimestamp": fields.DateTime(required=True, description="")
-    }
-)
-
-chatNSUpdateParticipantUNameModel = ns.model(
-    "chat api model update paricipated user name",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "ParticipantUName": fields.String(required=True, description="")
-    }
-)
-
-chatNSUpdateParticipantUniqKeyModel = ns.model(
-    "chat api model update paricipated user unique key",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "ParticipantUniqKey": fields.String(required=True, description="")
-    }
-)
-
-chatNSUpdateNewUserParicipatedTimeModel = ns.model(
-    "chat api model update new user paricipated time",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "NewUserParicipatedTimestamp": fields.DateTime(required=True, description="")
-    }
-)
-
-chatNSUpdateLastChatTimeModel = ns.model(
-    "chat api model update last chat time",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "LastChatTimestamp": fields.DateTime(required=True, description="")
-    }
-)
-
-chatNSDeleteChatUniqKeyModel = ns.model(
-    "chat api model delete chat room",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "ChatUniqKey": fields.String(required=True, description="")
+        # "ChatUniqKey": fields.String(required=True, description=""),
+        "ParticipantUserName": fields.String(required=True, description=""),
+        "ParticipantUserUniqKey": fields.String(required=True, description="")
+        # "ParticipantNewUserTimestamp": fields.DateTime(required=True, description=""),
+        # "LastChatTimestamp": fields.DateTime(required=True, description=""),
+        # "CreateTimestamp": fields.DateTime(required=True, description="")
     }
 )
 
@@ -96,7 +59,8 @@ responseModel = ns.model(
     "response api model",
     {
         "status": fields.String(readonly=True, description=""),
-        "message": fields.String(readonly=True, description="")
+        "message": fields.String(readonly=True, description=""),
+        "data": StringToJSON(readonly=True, description="")
     }
 )
 
@@ -108,212 +72,165 @@ class chatDAO(object):
         self.updateData = None
         self.deleteData = None
 
-    def get(self, chat_key, user_key):
-        self.selectData = g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ParticipantUniqKey.like(user_key), chatroomDBSchema.ChatUniqKey == chat_key).all()
+    @staticmethod
+    def ErrorHandler():
+        return {
+                   "status": 404,
+                   "message": "Chat Room Not Found",
+                   "data": {
+                       "ChatUniqKey": "",
+                       "ParticipantUserName": "",
+                       "ParticipantUserUniqKey": "",
+                       "ParticipantNewUserTimestamp": "",
+                       "LastChatTimestamp": "",
+                       "CreateTimestamp": ""
+                   }
+               }, 404
+
+    @staticmethod
+    def CheckChatRoomWithKey(key=None) -> bool:
+        if key is None:
+            return False
+
+        return True if g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ChatUniqKey == key).count() == 1 else False
+
+    @staticmethod
+    def CheckUserWithKeyOrUName(key=None, uname=None) -> bool:
+        if key is None:
+            return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == uname).count() == 1 else False
+
+        if uname is None:
+            return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).count() == 1 else False
+
+    def ChatRoomGetAllInformation(self):
+        self.selectData = g.ChatDB.query(chatroomDBSchema).all()
 
         if not self.selectData:
-            ns.abort(404, f"data doesn't exist")
+            return self.ErrorHandler()
 
-        return self.selectData
+        ResultObject = {
+            "status": 200,
+            "message": "success",
+            "data": []
+        }
 
-    def create(self, data):
+        for idx in range(len(self.selectData)):
+            ResultObject["data"].append({
+                "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
+                "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
+                "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
+                "LastChatTimestamp": f"{self.selectData[idx].LastChatTimestamp}",
+                "CreateTimestamp": f"{self.selectData[idx].CreateTimestamp}"
+            })
+
+        return ResultObject
+
+    def ChatRoomGetUserInformation(self, key_user: str, uname: str):
+        self.selectData = g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ParticipantUserUniqKey.match(key_user),
+                                                                  chatroomDBSchema.ParticipantUserName.match(uname)).first()
+
+        if not self.selectData:
+            return self.ErrorHandler()
+
+        ResultObject = {
+            "status": 200,
+            "message": "success",
+            "data": []
+        }
+
+        for idx in range(len(self.selectData)):
+            ResultObject["data"].append({
+                "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
+                "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
+                "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
+                "LastChatTimestamp": f"{self.selectData[idx].LastChatTimestamp}",
+                "CreateTimestamp": f"{self.selectData[idx].CreateTimestamp}"
+            })
+
+        return ResultObject
+
+    def ChatRoomCreate(self, data: dict):
+        self.insertData = data if self.CheckUserWithKeyOrUName(key=None, uname=data["ParticipantUserName"]) is True \
+                                  and self.CheckUserWithKeyOrUName(key=data["ParticipantUserUniqKey"], uname=None) is True else []
+
+        if not self.insertData:  # empty list checking
+            return self.ErrorHandler()
+
         try:
-            self.insertData = data
-
             g.ChatDB.add(
                 chatroomDBSchema(
-                    ChatUniqKey=self.insertData["ChatUniqKey"],
-                    ParticipantUName=self.insertData["ParticipantUName"],
-                    ParticipantUniqKey=self.insertData["ParticipantUniqKey"],
-                    NewUserParicipatedTimestamp=self.insertData["NewUserParicipatedTimestamp"],
-                    LastChatTimestamp=self.insertData["LastChatTimestamp"],
-                    CreateTimestamp=self.insertData["CreateTimestamp"]
+                    ChatUniqKey=hashlib.sha256((str(time.time()) + "-" + self.insertData["ParticipantUserUniqKey"]).encode()).hexdigest(),
+                    ParticipantUserName=self.insertData["ParticipantUserName"],
+                    ParticipantUserUniqKey=self.insertData["ParticipantUserUniqKey"],
+                    NewUserParicipatedTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    LastChatTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    CreateTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
             )
-            print(self.insertData)
             g.ChatDB.commit()
 
-            return CustomizeResponse().return_post_http_status_message(Type=True)
-        except Exception as e:
+            return {
+                       "status": 201,
+                       "message": "success",
+                       "data": {
+                           "ChatUniqKey": "",
+                           "ParticipantUserName": "",
+                           "ParticipantUserUniqKey": "",
+                           "ParticipantNewUserTimestamp": "",
+                           "LastChatTimestamp": "",
+                           "CreateTimestamp": ""
+                       }
+                   }, 201
+
+        except:
             g.ChatDB.rollback()
 
-        return CustomizeResponse().return_post_http_status_message(Type=False)
-
-    def update(self, data, chat_key, user_key, type):
-        if not self.get(chat_key, user_key) or type not in [1, 2, 3, 4]:
-            return CustomizeResponse().return_patch_http_status_message(Type=False)
-
-        if type == 1:
-            try:
-                self.updateData = data
-
-                g.ChatDB.query(chatroomDBSchema).filter(
-                    chatroomDBSchema.ChatUniqKey == chat_key
-                ).update(
-                    {'ParticipantUName': self.updateData["ParticipantUName"]}
-                )
-
-                g.ChatDB.commit()
-
-                return CustomizeResponse().return_patch_http_status_message(Type=True)
-            except Exception as e:
-                g.ChatDB.rollback()
-
-        if type == 2:
-            try:
-                self.updateData = data
-
-                g.ChatDB.query(chatroomDBSchema).filter(
-                    chatroomDBSchema.ChatUniqKey == chat_key
-                ).update(
-                    {'ParticipantUniqKey': self.updateData["ParticipantUniqKey"]}
-                )
-
-                g.ChatDB.commit()
-
-                return CustomizeResponse().return_patch_http_status_message(Type=True)
-            except Exception as e:
-                g.ChatDB.rollback()
-
-        if type == 3:
-            try:
-                self.updateData = data
-
-                g.ChatDB.query(chatroomDBSchema).filter(
-                    chatroomDBSchema.ChatUniqKey == chat_key
-                ).update(
-                    {'NewUserParicipatedTimestamp': self.updateData["NewUserParicipatedTimestamp"]}
-                )
-
-                g.ChatDB.commit()
-
-                return CustomizeResponse().return_patch_http_status_message(Type=True)
-            except Exception as e:
-                g.ChatDB.rollback()
-
-        if type == 4:
-            try:
-                self.updateData = data
-
-                g.ChatDB.query(chatroomDBSchema).filter(
-                    chatroomDBSchema.ChatUniqKey == chat_key
-                ).update(
-                    {'LastChatTimestamp': self.updateData["LastChatTimestamp"]}
-                )
-
-                g.ChatDB.commit()
-
-                return CustomizeResponse().return_patch_http_status_message(Type=True)
-            except Exception as e:
-                g.ChatDB.rollback()
-
-        return CustomizeResponse().return_patch_http_status_message(Type=False)
-
-    def delete(self, data):
-        try:
-            self.deleteData = data
-
-            g.ChatDB.query(chatroomDBSchema).filter(
-                chatroomDBSchema.ChatUniqKey == self.deleteData["ChatUniqKey"]
-            ).delete()
-
-            g.ChatDB.commit()
-
-            return CustomizeResponse().return_delete_http_status_message(Type=True)
-        except Exception as e:
-            g.ChatDB.rollback()
-
-        return CustomizeResponse().return_delete_http_status_message(Type=False)
+        return {
+                   "status": 400,
+                   "message": "failed",
+                   "data": {
+                       "ChatUniqKey": "",
+                       "ParticipantUserName": "",
+                       "ParticipantUserUniqKey": "",
+                       "ParticipantNewUserTimestamp": "",
+                       "LastChatTimestamp": "",
+                       "CreateTimestamp": ""
+                   }
+               }, 400
 
 
 DAOForChatroom = chatDAO()
 
 
 @ns.route('')
-class chatAdd(Resource):
-    """ADD NEW chat"""
+class ChatRoomCreate(Resource):
+    """Get All Chat Rooms or Add Chat Room"""
+
+    @ns.doc('GET ALL CHATROOM')
+    @ns.marshal_with(responseModel)
+    def get(self):
+        """Fetch a given resource"""
+        return DAOForChatroom.ChatRoomGetAllInformation()
 
     @ns.doc('ADD NEW MSG')
     @ns.expect(chatNSBaseModel)
     @ns.marshal_with(responseModel)
     def post(self):
         """Create New chat"""
-        return DAOForChatroom.create(ns.payload)
-
-    @ns.doc('DELETE EXIST CHATROOM')
-    @ns.expect(chatNSDeleteChatUniqKeyModel)
-    @ns.marshal_with(responseModel)
-    def delete(self):
-        """Delete Existing Chat"""
-        return DAOForChatroom.delete(ns.payload)
+        return DAOForChatroom.ChatRoomCreate(data=ns.payload)
 
 
-@ns.route('/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class chatGet(Resource):
+@ns.route('/<string:key_user>/<string:uname>')
+# @ns.response(404, 'not found')
+@ns.param('key_user', 'user id for unique identifier')
+@ns.param('uname', 'user name for unique identifier')
+class ChatRoomInformation(Resource):
     """Show a chat item"""
 
     @ns.doc('GET CHATROOM')
-    @ns.marshal_list_with(chatNSBaseModel)
-    def get(self, chat_uniqueKey, user_uniqueKey):
+    @ns.marshal_with(responseModel)
+    def get(self, user_key, uname):
         """Fetch a given resource"""
-        return DAOForChatroom.get(chat_key=chat_uniqueKey, user_key=user_uniqueKey)
-
-
-@ns.route('/ParticipantUName/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class chatPatchParticipantUName(Resource):
-    """Update Chat item ParticipantUName"""
-
-    @ns.doc('UPDATE EXIST CHATROOM')
-    @ns.expect(chatNSUpdateParticipantUNameModel)  # type 1
-    @ns.marshal_with(responseModel)
-    def patch(self, chat_uniqueKey, user_uniqueKey):
-        """Update ParticipantUName"""
-        return DAOForChatroom.update(ns.payload, chat_key=chat_uniqueKey, user_key=user_uniqueKey, type=1)
-
-
-@ns.route('/ParticipantUniqKey/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class chatPatchParticipantUniqKey(Resource):
-    """Update Chat item ParticipantUniqKey"""
-
-    @ns.expect(chatNSUpdateParticipantUniqKeyModel)  # type 2
-    @ns.marshal_with(responseModel)
-    def patch(self, chat_uniqueKey, user_uniqueKey):
-        """Update ParticipantUniqKey"""
-        return DAOForChatroom.update(ns.payload, chat_key=chat_uniqueKey, user_key=user_uniqueKey, type=2)
-
-
-@ns.route('/NewUserParicipatedTimestamp/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class chatPatchNewUserParicipatedTimestamp(Resource):
-    """Update Chat item NewUserParicipatedTimestamp"""
-
-    @ns.expect(chatNSUpdateNewUserParicipatedTimeModel)  # type 3
-    @ns.marshal_with(responseModel)
-    def patch(self, chat_uniqueKey, user_uniqueKey):
-        """Update NewUserParicipatedTimestamp"""
-        return DAOForChatroom.update(ns.payload, chat_key=chat_uniqueKey, user_key=user_uniqueKey, type=3)
-
-
-@ns.route('/LastChatTimestamp/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class chatPatchLastChatTimestamp(Resource):
-    """Update Chat item LastChatTimestamp"""
-
-    @ns.expect(chatNSUpdateLastChatTimeModel)  # type 4
-    @ns.marshal_with(responseModel)
-    def patch(self, chat_uniqueKey, user_uniqueKey):
-        """Update LastChatTimestamp"""
-        return DAOForChatroom.update(ns.payload, chat_key=chat_uniqueKey, user_key=user_uniqueKey, type=4)
+        return DAOForChatroom.ChatRoomGetUserInformation(user_key=user_key, uname=uname)

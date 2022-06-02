@@ -40,11 +40,11 @@ class user(UserModel.Model):
     __bind_key__ = 'users'
 
     id = UserModel.Column(UserModel.INTEGER, primary_key=True, autoincrement=True)
-    UserUniqKey = UserModel.Column(UserModel.VARCHAR(100), unique=True, nullable=False)
-    UserName = UserModel.Column(UserModel.VARCHAR(50), nullable=False)
+    UserUniqKey = UserModel.Column(UserModel.VARCHAR(100), unique=True, nullable=True)
+    UserName = UserModel.Column(UserModel.VARCHAR(50), unique=True, nullable=True)
     UserAccountPW = UserModel.Column(UserModel.VARCHAR(88), nullable=False)
-    LastLoginTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    CreateTimestamp = UserModel.Column(UserModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    LastLoginTimestamp = UserModel.Column(UserModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    CreateTimestamp = UserModel.Column(UserModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def __init__(self, UserUniqKey, UserName, UserAccountPW, LastLoginTimestamp, CreateTimestamp, **kwargs):
         self.UserUniqKey = UserUniqKey

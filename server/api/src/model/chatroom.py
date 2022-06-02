@@ -40,20 +40,20 @@ class chatroom(ChattingModel.Model):
     __bind_key__ = 'chatrooms'
 
     id = ChattingModel.Column(ChattingModel.INTEGER, primary_key=True, autoincrement=True)
-    ChatUniqKey = ChattingModel.Column(ChattingModel.VARCHAR(100), nullable=False)
-    ParticipantUName = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
-    ParticipantUniqKey = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
-    NewUserParicipatedTimestamp = ChattingModel.Column(ChattingModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    LastChatTimestamp = ChattingModel.Column(ChattingModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    CreateTimestamp = ChattingModel.Column(ChattingModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    ChatUniqKey = ChattingModel.Column(ChattingModel.VARCHAR(100), unique=True, nullable=True)
+    ParticipantUserName = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
+    ParticipantUserUniqKey = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
+    NewUserParicipatedTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    LastChatTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    CreateTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def __init__(self, ChatUniqKey, ParticipantUName, ParticipantUniqKey, NewUserParicipatedTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
+    def __init__(self, ChatUniqKey, ParticipantUserName, ParticipantUserUniqKey, NewUserParicipatedTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
         self.ChatUniqKey = ChatUniqKey
-        self.ParticipantUName = ParticipantUName
-        self.ParticipantUniqKey = ParticipantUniqKey
+        self.ParticipantUserName = ParticipantUserName
+        self.ParticipantUserUniqKey = ParticipantUserUniqKey
         self.NewUserParicipatedTimestamp = NewUserParicipatedTimestamp
         self.LastChatTimestamp = LastChatTimestamp
         self.CreateTimestamp = CreateTimestamp
 
     def __repr__(self):
-        return f"<user('{self.ChatUniqKey}', '{self.ParticipantUName}', '{self.ParticipantUniqKey}', '{self.NewUserParicipatedTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"
+        return f"<user('{self.ChatUniqKey}', '{self.ParticipantUserName}', '{self.ParticipantUserUniqKey}', '{self.NewUserParicipatedTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"

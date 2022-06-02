@@ -46,7 +46,7 @@ class message(MessageModel.Model):
     MessageType = MessageModel.Column(MessageModel.BOOLEAN, default=0, nullable=True)
     MessageData = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
     MediaDataPath = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
-    MessageTimestamp = MessageModel.Column(MessageModel.DATETIME, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    MessageTimestamp = MessageModel.Column(MessageModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     def __init__(self, UserUniqKey, ChatUniqKey, UserName, MessageType, MessageData, MediaDataPath, MessageTimestamp, **kwargs):
         self.UserUniqKey = UserUniqKey

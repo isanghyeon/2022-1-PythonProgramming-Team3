@@ -35,6 +35,8 @@ import sys, os, json, datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from .customResponse import CustomizeResponse
+from .customField import StringToJSON
+
 from model.message import message as messageDBSchema
 from model.chatroom import chatroom as chatroomDBSchema
 
@@ -58,7 +60,8 @@ responseModel = ns.model(
     "response api model",
     {
         "status": fields.String(readonly=True, description=""),
-        "message": fields.String(readonly=True, description="")
+        "message": fields.String(readonly=True, description=""),
+        "data": StringToJSON(readonly=True, description="")
     }
 )
 
@@ -68,44 +71,87 @@ class msgDAO(object):
         self.selectData = None
         self.insertData = None
 
-    def ChatRoomValidator(self, key_chat: str):
-        self.selectData = g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ChatUniqKey == key_chat).count()
+    @staticmethod
+    def ErrorHandler():
+        return {
+                   "status": 404,
+                   "message": "Chatting Room Not Found",
+                   "data": [{
+                       "UserUniqKey": "",
+                       "ChatUniqKey": "",
+                       "UserName": "",
+                       "MessageType": "",
+                       "MessageData": "",
+                       "MediaDataPath": "",
+                       "MessageTimestamp": ""
+                   }, ]
+               }, 404
 
-        if self.selectData < 1:
-            ns.abort(404, f"Chatting Room is not exist")
+    @staticmethod
+    def CheckChattingRoomWithKey(key=None) -> bool:
+        if key is None:
+            return False
 
-        return True if self.selectData == 1 else False
+        return True if g.MsgDB.query(chatroomDBSchema).filter(chatroomDBSchema.ChatUniqKey == key).count() == 1 else False
 
-    def GetAllMessages(self, key_chat: str):
-        if self.ChatRoomValidator(key_chat):
-            pass
-
-        self.selectData = g.MsgDB.query(messageDBSchema).filter(messageDBSchema.ChatUniqKey == key_chat).all()
+    def MessageGetAllData(self, key: str):
+        self.selectData = g.MsgDB.query(messageDBSchema).filter(messageDBSchema.ChatUniqKey == key).all() if self.CheckChattingRoomWithKey(key) is True else []
 
         if not self.selectData:
-            ns.abort(404, f"data doesn't exist")
+            return self.ErrorHandler()
 
-        return self.selectData
+        ResultObject = {
+            "status": 200,
+            "message": "success",
+            "data": []
+        }
 
-    def GetUserMessages(self, key_chat: str, key_user: str):
-        if self.ChatRoomValidator(key_chat):
-            pass
+        for idx in range(len(self.selectData)):
+            ResultObject["data"].append({
+                "UserUniqKey": f"{self.selectData[idx].UserUniqKey}",
+                "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "UserName": f"{self.selectData[idx].UserName}",
+                "MessageType": f"{self.selectData[idx].MessageType}",
+                "MessageData": f"{self.selectData[idx].MessageData}",
+                "MediaDataPath": f"{self.selectData[idx].MediaDataPath}",
+                "MessageTimestamp": f"{self.selectData[idx].MessageTimestamp}"
+            })
 
-        self.selectData = g.MsgDB.query(messageDBSchema).filter(messageDBSchema.ChatUniqKey == key_chat, messageDBSchema.UserUniqKey == key_user).all()
+        return ResultObject
+
+    def MessageGetUserData(self, key_chat: str, key_user: str):
+        self.selectData = g.MsgDB.query(messageDBSchema).filter(messageDBSchema.ChatUniqKey == key_chat,
+                                                                messageDBSchema.UserUniqKey == key_user).all() if self.CheckChattingRoomWithKey(key_chat) is True else []
 
         if not self.selectData:
-            ns.abort(404, f"data doesn't exist")
+            return self.ErrorHandler()
 
-        return self.selectData
+        ResultObject = {
+            "status": 200,
+            "message": "success",
+            "data": []
+        }
 
-    def create(self, key_chat: str, data: dict):
-        if not self.ChatRoomValidator(key_chat):
-            return CustomizeResponse().return_post_http_status_message(Type=False)
+        for idx in range(len(self.selectData)):
+            ResultObject["data"].append({
+                "UserUniqKey": f"{self.selectData[idx].UserUniqKey}",
+                "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "UserName": f"{self.selectData[idx].UserName}",
+                "MessageType": f"{self.selectData[idx].MessageType}",
+                "MessageData": f"{self.selectData[idx].MessageData}",
+                "MediaDataPath": f"{self.selectData[idx].MediaDataPath}",
+                "MessageTimestamp": f"{self.selectData[idx].MessageTimestamp}"
+            })
+
+        return ResultObject
+
+    def MessageCreate(self, data: dict):
+        self.insertData = {} if self.CheckChattingRoomWithKey(key=data["ChatUniqKey"]) is False else data
+
+        if not self.insertData:
+            self.ErrorHandler()
 
         try:
-            self.insertData = data
-            print(self.insertData)
-
             g.MsgDB.add(
                 messageDBSchema(
                     UserUniqKey=self.insertData["UserUniqKey"],
@@ -117,48 +163,76 @@ class msgDAO(object):
                     MessageTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
             )
-            print(1)
             g.MsgDB.commit()
 
-            return CustomizeResponse().return_post_http_status_message(Type=True)
-        except Exception as e:
-            print(e)
+            return {
+                       "status": 201,
+                       "message": "success",
+                       "data": [{
+                           "UserUniqKey": "",
+                           "ChatUniqKey": "",
+                           "UserName": "",
+                           "MessageType": "",
+                           "MessageData": "",
+                           "MediaDataPath": "",
+                           "MessageTimestamp": ""
+                       }, ]
+                   }, 201
+
+        except:
             g.MsgDB.rollback()
 
-        return CustomizeResponse().return_post_http_status_message(Type=False)
+        return {
+                   "status": 400,
+                   "message": "failed",
+                   "data": [{
+                       "UserUniqKey": f"{e}",
+                       "ChatUniqKey": "",
+                       "UserName": "",
+                       "MessageType": "",
+                       "MessageData": "",
+                       "MediaDataPath": "",
+                       "MessageTimestamp": ""
+                   }, ]
+               }, 400
 
 
 DAOForMessage = msgDAO()
 
 
-@ns.route('/<string:chat_uniqueKey>')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-class msgAdd(Resource):
-    """ADD NEW msg"""
+@ns.route('')
+class messageCreate(Resource):
+    """Add New Message"""
 
     @ns.doc('ADD NEW MSG')
     @ns.expect(msgNSBaseModel)
     @ns.marshal_with(responseModel)
-    def post(self, chat_uniqueKey):
+    def post(self):
         """Create New msg"""
-        return DAOForMessage.create(data=ns.payload, key_chat=chat_uniqueKey)
+        return DAOForMessage.MessageCreate(data=ns.payload)
+
+
+@ns.route('/<string:key_chat>')
+@ns.param('key_chat', 'chat id for unique identifier')
+class messageAllInformation(Resource):
+    """Show All Messages"""
 
     @ns.doc('GET ALL MESSAGE IN CHATROOM')
-    @ns.marshal_list_with(msgNSBaseModel)
-    def get(self, chat_uniqueKey):
+    @ns.marshal_with(responseModel)
+    def get(self, key_chat):
         """Fetch a given resource"""
-        return DAOForMessage.GetAllMessages(key_chat=chat_uniqueKey)
+        return DAOForMessage.MessageGetAllData(key=key_chat)
 
 
-@ns.route('/<string:chat_uniqueKey>/<string:user_uniqueKey>')
-@ns.response(404, 'not found')
-@ns.param('chat_uniqueKey', 'chat id for unique identifier')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
-class msgAllGet(Resource):
-    """Show a single item"""
+@ns.route('/<string:key_chat>/<string:key_user>')
+# @ns.response(404, 'not found')
+@ns.param('key_chat', 'chat id for unique identifier')
+@ns.param('key_user', 'user id for unique identifier')
+class messageUserInformation(Resource):
+    """Show a User Messages"""
 
-    @ns.doc('GET USER MSG IN CHATROOM')
-    @ns.marshal_list_with(msgNSBaseModel)
-    def get(self, chat_uniqueKey, user_uniqueKey):
+    @ns.doc('GET USER MESSAGE IN CHATROOM')
+    @ns.marshal_with(responseModel)
+    def get(self, key_chat, key_user):
         """Fetch a given resource"""
-        return DAOForMessage.GetUserMessages(key_chat=chat_uniqueKey, key_user=user_uniqueKey)
+        return DAOForMessage.MessageGetUserData(key_chat=key_chat, key_user=key_user)

@@ -68,7 +68,7 @@ services:
       dockerfile: ./Dockerfile
 
     ports:
-      - "40010:80"
+      - "30000:80"
 
     networks:
       - default

@@ -20,6 +20,7 @@ ENV MYSQL_ROOT_PASSWORD=1234
 ENV MYSQL_DATABASE=messages
 ENV TZ=Asia/Seoul
 
+RUN ["ln", "-sf", "/usr/share/zoneinfo/Asia/Seoul", "/etc/localtime"]
 RUN ["chmod", "777", "/docker-entrypoint-initdb.d/message.sql"]
 
 EXPOSE 3306

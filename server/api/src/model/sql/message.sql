@@ -10,6 +10,7 @@ create table `message`
     id                          int auto_increment primary key,
     UserUniqKey                 varchar(100)                                not null,
     ChatUniqKey                 varchar(100)                                not null,
+    UserName                    varchar(50)                                 not null,
     MessageType                 tinyint(4) default 0                        not null,
     MessageData                 text default 0                              not null,
     MediaDataPath               text default 0                              not null,

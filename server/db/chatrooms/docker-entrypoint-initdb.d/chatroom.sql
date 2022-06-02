@@ -1,5 +1,5 @@
-SET GLOBAL general_log='ON';
-SET GLOBAL general_log_file='/tmp/general_activity.log';
+SET GLOBAL general_log = 'ON';
+SET GLOBAL general_log_file = '/tmp/general_activity.log';
 
 # -- auto-generated definition
 # drop database if exists `chatrooms`;
@@ -13,11 +13,11 @@ create table `chatroom`
 (
     id                          int auto_increment primary key,
     ChatUniqKey                 varchar(100)                          not null,
-    ParticipantUName            longtext  default 0                   not null,
-    ParticipantUniqKey          longtext  default 0                   not null,
-    NewUserParicipatedTimestamp timestamp default '0000-00-00 00:00:00' not null on update current_timestamp(),
-    LastChatTimestamp           timestamp default '0000-00-00 00:00:00' not null on update current_timestamp(),
-    CreateTimestamp             timestamp default '0000-00-00 00:00:00' not null on update current_timestamp(),
+    ParticipantUserName         longtext  default 0                   not null,
+    ParticipantUserUniqKey      longtext  default 0                   not null,
+    ParticipantNewUserTimestamp timestamp default current_timestamp() not null,
+    LastChatTimestamp           timestamp default current_timestamp() not null,
+    CreateTimestamp             timestamp default current_timestamp() not null,
     constraint uk_chatuniqkey
         unique (ChatUniqKey)
 );

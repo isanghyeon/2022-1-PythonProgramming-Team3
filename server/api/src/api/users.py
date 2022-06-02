@@ -36,6 +36,7 @@ import sys, os, json, datetime, hashlib
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from .customResponse import CustomizeResponse
+from .customField import StringToJSON
 from model.user import user as userDBSchema
 
 ns = Namespace('api/users', description='User information operator')
@@ -49,28 +50,12 @@ userNSBaseModel = ns.model(
     }
 )
 
-userNSValidationModel = ns.model(
-    "user validation api model", \
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "UserUniqKey": fields.String(required=True, description=""),
-        "UserName": fields.String(required=True, description="")
-    }
-)
-
-userNSUpdateLoginTimeModel = ns.model(
-    "user api model update login time",
-    {
-        "id": fields.Integer(readonly=True, descriptio=""),
-        "LastLoginTimestamp": fields.DateTime(required=True, description="")
-    }
-)
-
 responseModel = ns.model(
     "response api model",
     {
         "status": fields.String(readonly=True, description=""),
-        "message": fields.String(readonly=True, description="")
+        "message": fields.String(readonly=True, description=""),
+        "data": StringToJSON(readonly=True, description="")
     }
 )
 
@@ -81,29 +66,86 @@ class userDAO(object):
         self.insertData = None
         self.updateData = None
 
-    def UserValidator(self, uname: str, upw: str):
-        self.selectData = g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == uname, userDBSchema.UserAccountPW == hashlib.sha256(upw.encode()).hexdigest()).first()
+    @staticmethod
+    def ErrorHandler():
+        return {
+                   "status": 404,
+                   "message": "User Not Found",
+                   "data": {
+                       "UserUniqKey": "",
+                       "UserName": ""
+                   }
+               }, 404
 
-        if not self.selectData:
-            ns.abort(404, f"user doesn't exist")
+    @staticmethod
+    def CheckUserWithKeyOrUName(key=None, uname=None) -> bool:
+        if key is None:
+            return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == uname).count() == 1 else False
 
-        return CustomizeResponse().return_get_http_status_message(Type=True, data=self.selectData.UserUniqKey)
+        if uname is None:
+            return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).count() == 1 else False
 
-    def GetUserInfo(self, key: str):
-        self.selectData = g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).first()
+    def UserSignIn(self, uname: str, upw: str):
+        self.selectData = g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == uname,
+                                                              userDBSchema.UserAccountPW == hashlib.sha256(upw.encode()).hexdigest()).first() if self.CheckUserWithKeyOrUName(
+            key=None, uname=uname) is True else []
 
-        if not self.selectData:
-            ns.abort(404, f"user doesn't exist")
-
-        return self.selectData
-
-    def CreateUser(self, data: dict):
-        if g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == data["UserName"]).first():
-            return CustomizeResponse().return_post_http_status_message(Type=False)
+        if not self.selectData:  # empty list checking
+            return self.ErrorHandler()
 
         try:
-            self.insertData = data
+            g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == str(self.selectData.UserUniqKey)).update(
+                {"LastLoginTimestamp": f'{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'}
+            )
+            g.UserDB.commit()
+            return {
+                "status": 200,
+                "message": "success",
+                "data": {
+                    "UserUniqKey": self.selectData.UserUniqKey,
+                    "UserName": self.selectData.UserName
+                }
+            }
+        except Exception as e:
+            g.UserDB.rollback()
+            return {
+                "status": 500,
+                "message": f"{e}",
+                "data": {
+                    "UserUniqKey": self.selectData.UserUniqKey,
+                    "UserName": self.selectData.UserName
+                }
+            }
 
+    def UserGetInformation(self, key: str):
+        self.selectData = g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).first() if self.CheckUserWithKeyOrUName(key=key, uname=None) is True else []
+
+        if not self.selectData:
+            return self.ErrorHandler()
+
+        return {
+            "status": 200,
+            "message": "success",
+            "data": {
+                "UserUniqKey": self.selectData.UserUniqKey,
+                "UserName": self.selectData.UserName
+            }
+        }
+
+    def UserSinUp(self, data: dict):
+        self.insertData = {} if self.CheckUserWithKeyOrUName(key=None, uname=data["UserName"]) is True else data
+
+        if not self.insertData:
+            return {
+                       "status": 400,
+                       "message": "User already exists... ):",
+                       "data": {
+                           "UserUniqKey": "",
+                           "UserName": ""
+                       }
+                   }, 400
+
+        try:
             g.UserDB.add(
                 userDBSchema(
                     UserUniqKey=hashlib.sha256((str(time.time()) + "-" + self.insertData["UserName"]).encode()).hexdigest(),
@@ -115,40 +157,32 @@ class userDAO(object):
             )
             g.UserDB.commit()
 
-            return CustomizeResponse().return_post_http_status_message(Type=True)
-        except Exception as e:
-            print(e)
+            return {
+                       "status": 201,
+                       "message": "success",
+                       "data": {
+                           "UserUniqKey": "",
+                           "UserName": ""
+                       }
+                   }, 201
+        except:
             g.UserDB.rollback()
 
-        return CustomizeResponse().return_post_http_status_message(Type=False)
-
-    def update(self, key: str,  data: dict):
-        if not self.GetUserInfo(key):
-            pass
-
-        try:
-            self.updateData = data
-
-            g.UserDB.query(userDBSchema).filter(
-                userDBSchema.UserUniqKey == key
-            ).update(
-                {'LastLoginTimestamp': self.updateData["LastLoginTimestamp"]}
-            )
-
-            g.UserDB.commit()
-
-            return CustomizeResponse().return_patch_http_status_message(Type=True)
-        except Exception as e:
-            g.UserDB.rollback()
-
-        return CustomizeResponse().return_patch_http_status_message(Type=False)
+        return {
+                   "status": 400,
+                   "message": "failed",
+                   "data": {
+                       "UserUniqKey": "",
+                       "UserName": ""
+                   }
+               }, 400
 
 
 DAOForUser = userDAO()
 
 
 @ns.route('')
-class userAdd(Resource):
+class userRegister(Resource):
     """ADD NEW USER"""
 
     @ns.doc('ADD NEW USER')
@@ -156,39 +190,30 @@ class userAdd(Resource):
     @ns.marshal_with(responseModel)
     def post(self):
         """Create New User"""
-        return DAOForUser.CreateUser(ns.payload)
+        return DAOForUser.UserSinUp(data=ns.payload)
 
 
 @ns.route('/<string:uname>/<string:upw>')
-@ns.response(404, 'Not Found')
-@ns.response(200, 'OK')
+# @ns.response(404, 'Not Found')
 @ns.param("uname", "user name")
-@ns.param("upw", "uesr password")
-class userValidate(Resource):
+@ns.param("upw", "user password")
+class userLogin(Resource):
     """User validation method"""
 
     @ns.doc("UESR VALIDATE")
     @ns.marshal_with(responseModel)
     def get(self, uname, upw):
         """Fetch a given resource"""
-        return DAOForUser.UserValidator(uname=uname, upw=upw)
+        return DAOForUser.UserSignIn(uname=uname, upw=upw)
 
 
-@ns.route('/<string:user_uniqueKey>')
-@ns.response(404, 'Not Found')
-@ns.param('user_uniqueKey', 'user id for unique identifier')
+@ns.route('/<string:key_user>')
+@ns.param('key_user', 'user id for unique identifier')
 class userInformation(Resource):
     """Show and Update a single item information"""
 
     @ns.doc('GET USER')
-    @ns.marshal_with(userNSValidationModel)
-    def get(self, user_uniqueKey):
-        """Fetch a given resource"""
-        return DAOForUser.GetUserInfo(key=user_uniqueKey)
-
-    @ns.doc('UPDATE EXIST USER')
-    @ns.expect(userNSUpdateLoginTimeModel)
     @ns.marshal_with(responseModel)
-    def patch(self, user_uniqueKey):
-        """Update Existing User"""
-        return DAOForUser.update(ns.payload, key=user_uniqueKey)
+    def get(self, key_user):
+        """Fetch a given resource"""
+        return DAOForUser.UserGetInformation(key=key_user)

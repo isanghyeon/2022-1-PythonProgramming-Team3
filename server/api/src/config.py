@@ -39,11 +39,11 @@ class Config(object):
     """
     SECRET_KEY = os.urandom(16)
     SESSION_COOKIE_NAME = 'BWASP'
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:1234@api-server_users_1/users?charset=utf8"
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:1234@dev-api_users_1/users?charset=utf8"
     SQLALCHEMY_BINDS = {
-        "users": "mysql+pymysql://root:1234@api-server_users_1/users?charset=utf8",
-        "messages": "mysql+pymysql://root:1234@api-server_messages_1/messages?charset=utf8",
-        "chatrooms": "mysql+pymysql://root:1234@api-server_chatrooms_1/chatrooms?charset=utf8"
+        "users": "mysql+pymysql://root:1234@dev-api_users_1/users?charset=utf8",
+        "messages": "mysql+pymysql://root:1234@dev-api_messages_1/messages?charset=utf8",
+        "chatrooms": "mysql+pymysql://root:1234@dev-api_chatrooms_1/chatrooms?charset=utf8"
     }
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
