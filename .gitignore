@@ -3,3 +3,4 @@ venv/*
 .idea/
 GUI/*
 .DS_Store
+**/__pycache__/*
