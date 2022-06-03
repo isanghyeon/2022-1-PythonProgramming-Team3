@@ -127,8 +127,8 @@ class chatDAO(object):
         return ResultObject
 
     def ChatRoomGetUserInformation(self, key_user: str, uname: str):
-        self.selectData = g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ParticipantUserUniqKey.match(key_user),
-                                                                  chatroomDBSchema.ParticipantUserName.match(uname)).first()
+        self.selectData = g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ParticipantUserUniqKey.like("%" + key_user + "%"),
+                                                                  chatroomDBSchema.ParticipantUserName.like("%" + uname + "%")).all()
 
         if not self.selectData:
             return self.ErrorHandler()
@@ -136,18 +136,18 @@ class chatDAO(object):
         ResultObject = {
             "status": 200,
             "message": "success",
-            "data": []
+            "data": self.selectData
         }
 
-        for idx in range(len(self.selectData)):
-            ResultObject["data"].append({
-                "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
-                "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
-                "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
-                "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
-                "LastChatTimestamp": f"{self.selectData[idx].LastChatTimestamp}",
-                "CreateTimestamp": f"{self.selectData[idx].CreateTimestamp}"
-            })
+        # for idx in range(len(self.selectData)):
+        #     ResultObject["data"].append({
+        #         "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+        #         "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
+        #         "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
+        #         "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
+        #         "LastChatTimestamp": f"{self.selectData[idx].LastChatTimestamp}",
+        #         "CreateTimestamp": f"{self.selectData[idx].CreateTimestamp}"
+        #     })
 
         return ResultObject
 
@@ -164,7 +164,7 @@ class chatDAO(object):
                     ChatUniqKey=hashlib.sha256((str(time.time()) + "-" + self.insertData["ParticipantUserUniqKey"]).encode()).hexdigest(),
                     ParticipantUserName=self.insertData["ParticipantUserName"],
                     ParticipantUserUniqKey=self.insertData["ParticipantUserUniqKey"],
-                    NewUserParicipatedTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    ParticipantNewUserTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     LastChatTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     CreateTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
@@ -231,6 +231,6 @@ class ChatRoomInformation(Resource):
 
     @ns.doc('GET CHATROOM')
     @ns.marshal_with(responseModel)
-    def get(self, user_key, uname):
+    def get(self, key_user, uname):
         """Fetch a given resource"""
-        return DAOForChatroom.ChatRoomGetUserInformation(user_key=user_key, uname=uname)
+        return DAOForChatroom.ChatRoomGetUserInformation(key_user=key_user, uname=uname)

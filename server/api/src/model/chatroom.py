@@ -43,17 +43,17 @@ class chatroom(ChattingModel.Model):
     ChatUniqKey = ChattingModel.Column(ChattingModel.VARCHAR(100), unique=True, nullable=True)
     ParticipantUserName = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
     ParticipantUserUniqKey = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
-    NewUserParicipatedTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    ParticipantNewUserTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     LastChatTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     CreateTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def __init__(self, ChatUniqKey, ParticipantUserName, ParticipantUserUniqKey, NewUserParicipatedTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
+    def __init__(self, ChatUniqKey, ParticipantUserName, ParticipantUserUniqKey, ParticipantNewUserTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
         self.ChatUniqKey = ChatUniqKey
         self.ParticipantUserName = ParticipantUserName
         self.ParticipantUserUniqKey = ParticipantUserUniqKey
-        self.NewUserParicipatedTimestamp = NewUserParicipatedTimestamp
+        self.ParticipantNewUserTimestamp = ParticipantNewUserTimestamp
         self.LastChatTimestamp = LastChatTimestamp
         self.CreateTimestamp = CreateTimestamp
 
     def __repr__(self):
-        return f"<user('{self.ChatUniqKey}', '{self.ParticipantUserName}', '{self.ParticipantUserUniqKey}', '{self.NewUserParicipatedTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"
+        return f"<user('{self.ChatUniqKey}', '{self.ParticipantUserName}', '{self.ParticipantUserUniqKey}', '{self.ParticipantNewUserTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"
