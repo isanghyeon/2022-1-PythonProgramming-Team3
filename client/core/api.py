@@ -1,4 +1,4 @@
-import os, requests, datetime
+import os, requests, datetime, json
 
 
 class Config(object):
@@ -31,8 +31,9 @@ class User:
         """
         try:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.post(
-                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.loads(data)
+                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
+            print(self.RESPONSE_OBJ.json())
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
 
@@ -95,7 +96,7 @@ class Message:
         """
         try:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.post(
-                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.loads(data)
+                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
@@ -160,7 +161,7 @@ class ChatRoom:
         """
         try:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.post(
-                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.loads(data)
+                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
@@ -178,7 +179,7 @@ class ChatRoom:
         """
         try:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.patch(
-                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["PATCH"] + key, headers=self.REQUEST_HEADER, data=json.loads(data)
+                url=self.URL_PREFIX + self.URL_PREFIX_TYPE["PATCH"] + key, headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}

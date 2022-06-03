@@ -32,6 +32,20 @@ import socket
 import threading
 
 
+def SocketStart():
+    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Host = 'localhost'
+    Port = 9000
+    client_sock.connect((Host, Port))
+    print(f"Connected to {Host}:{Port}")
+
+    thread1 = threading.Thread(target=Send, args=(client_sock,))
+    thread1.start()
+
+    thread2 = threading.Thread(target=Recv, args=(client_sock,))
+    thread2.start()
+
+
 def Send(client_sock):
     while True:
         send_data = bytes(
@@ -47,14 +61,4 @@ def Recv(client_sock):
 
 
 if __name__ == '__main__':
-    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    Host = 'localhost'
-    Port = 9000
-    client_sock.connect((Host, Port))
-    print(f"Connected to {Host}:{Port}")
-
-    thread1 = threading.Thread(target=Send, args=(client_sock,))
-    thread1.start()
-
-    thread2 = threading.Thread(target=Recv, args=(client_sock,))
-    thread2.start()
+    SocketStart()

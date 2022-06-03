@@ -28,3 +28,29 @@
 #      THE SOFTWARE.
 #
 
+from api import ChatRoom
+from api import User
+
+import json
+
+id = "isanghyeon"
+pw = "isanghyeon"
+
+a = User().UserRegister(data={
+    "UserName": id,
+    "UserAccountPW": pw
+})
+print(a)
+# 사용자 회원가입 완료~~
+
+b = User().UserSignIn(uname=id, upw=pw)
+c = b.get('data')
+userkey = c.get('UserUniqKey')  # 사용자 키
+# 사용자 키 받기 완료~~
+
+d = ChatRoom().ChatRoomAdd(data={  # 한명 있는 채팅방 완성?
+    "ParticipantUserName": id,
+    "ParticipantUserUniqKey": userkey
+})
+
+print(d)

@@ -29,44 +29,5 @@
 """
 
 import sys, os
-from tkinter import messagebox
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from core.api import User
-
-
-class AccountValidator:
-    def __init__(self):
-        pass
-
-
-class Account:
-    def __init__(self):
-        self.UserObj = User()
-        self.UserName = None
-        self.UserPassword = None
-        self.ResultObject = None
-
-    def SignIn(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserSignIn(uname=UserName, upw=UserPassword)
-
-        if self.ResultObject["status"] == "200":
-            messagebox.showinfo("Success", "Sign in successful")
-            return True
-        else:
-            messagebox.showinfo("Success", "Sign in failed")
-            return False
-
-        # TODO: if status code is 400, response data checking
-
-    def SignUp(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserRegister(data={
-            "UserName": UserName,
-            "UserAccountPW": UserPassword
-        })
-
-        if self.ResultObject["status"] == "201":
-            messagebox.showinfo("Success", "Register successful")
-        else:
-            messagebox.showerror("Error", "Register Failed")
