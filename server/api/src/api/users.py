@@ -106,16 +106,17 @@ class userDAO(object):
                     "UserName": self.selectData.UserName
                 }
             }
-        except Exception as e:
+        except:
             g.UserDB.rollback()
-            return {
-                "status": 500,
-                "message": f"{e}",
-                "data": {
-                    "UserUniqKey": self.selectData.UserUniqKey,
-                    "UserName": self.selectData.UserName
-                }
+
+        return {
+            "status": 400,
+            "message": "failed",
+            "data": {
+                "UserUniqKey": self.selectData.UserUniqKey,
+                "UserName": self.selectData.UserName
             }
+        }
 
     def UserGetInformation(self, key: str):
         self.selectData = g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).first() if self.CheckUserWithKeyOrUName(key=key, uname=None) is True else []
