@@ -1,4 +1,4 @@
-from chat_gui import __version__
+from gui import __version__
 
 
 def test_version():

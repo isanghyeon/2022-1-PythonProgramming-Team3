@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "chat_gui"
+name = "gui"
 version = "0.1.0"
 description = ""
 authors = ["uneyung <man8532@naver.com>"]
