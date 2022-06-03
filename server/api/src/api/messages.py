@@ -163,7 +163,15 @@ class msgDAO(object):
                     MessageTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
             )
+            g.MsgDB.query(chatroomDBSchema.LastChatTimestamp).filter(
+                chatroomDBSchema.ChatUniqKey == self.insertData["ChatUniqKey"]
+            ).update(
+                {
+                    "LastChatTimestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+            )
             g.MsgDB.commit()
+            g.ChatDB.query()
 
             return {
                        "status": 201,
