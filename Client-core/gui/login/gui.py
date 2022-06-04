@@ -7,8 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import json
 from pathlib import Path
-from API.api import User
-
+from API.api import ChatRoom
 
 # from tkinter import *
 # Explicit imports to satisfy Flake8
@@ -22,6 +21,8 @@ ASSETS_PATH = OUTPUT_PATH / Path("./assets")
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
+    global ID
+    global PW
 
 window = Tk()
 
@@ -65,9 +66,6 @@ canvas.create_text(
 
 # If login_Button State == 'Active'
 def sign_in():
-    ID = entry_id.get()
-    PW = entry_pw.get()
-
     if ID == '':
         messagebox.showerror("ID Error", "Please enter your ID.")
     elif PW == '':
@@ -85,9 +83,6 @@ def sign_in():
 
 # If su_button state == 'Active'
 def sign_up():
-    ID = entry_id.get()
-    PW = entry_pw.get()
-
     if ID == '':
         messagebox.showerror("ID Error", "Please enter your ID.")
     elif PW == '':
@@ -107,6 +102,8 @@ entry_pw = Entry(window, font=('Arial 12'), bd = 0, show ='*')
 entry_id.place(x = 145, y = 462, width = 207, height = 30)
 entry_pw.place(x = 145, y = 547, width = 207, height = 30)
 
+ID = entry_id.get()
+PW = entry_pw.get()
 
 # Sign In Button
 si_button = Button(

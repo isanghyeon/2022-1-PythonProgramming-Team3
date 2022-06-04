@@ -1,4 +1,6 @@
-import os, requests, datetime
+
+
+import os, requests, datetime, json
 
 
 class Config(object):
@@ -33,6 +35,7 @@ class User:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.post(
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
+            print(self.RESPONSE_OBJ.json())
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
 
