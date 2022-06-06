@@ -64,25 +64,31 @@ if __name__ == '__main__':
     send_queue = Queue()
     HOST = 'localhost'
     PORT = 9000
+
+    # 소켓 생성
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # 바인딩(소켓을 포트에 맵핑) - 호스트 이름, 포트번호 튜플로 전달
     server_sock.bind((HOST, PORT))
+    # 클라이언트가 바인드된 포트로 연결을 할 때까지 기다림
+    # 연결 요청이 들어오면 (소켓, 주소 정보)로 구성되는 튜플 리턴
     server_sock.listen(10)
+
     count = 0
-    group = []
+    client_group = []
 
     while True:
         count = count + 1
         print(server_sock)
         conn, addr = server_sock.accept()
-        group.append(conn)
+        client_group.append(conn)
         print('Connected ' + str(addr))
         if count > 1:
             send_queue.put('Group Changed')
-            thread1 = threading.Thread(target=Send, args=(group, send_queue,))
+            thread1 = threading.Thread(target=Send, args=(client_group, send_queue,))
             thread1.start()
             pass
         else:
-            thread1 = threading.Thread(target=Send, args=(group, send_queue,))
+            thread1 = threading.Thread(target=Send, args=(client_group, send_queue,))
             thread1.start()
 
         thread2 = threading.Thread(target=Recv, args=(conn, count, send_queue,))
