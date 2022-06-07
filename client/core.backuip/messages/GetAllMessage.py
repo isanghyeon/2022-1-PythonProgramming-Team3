@@ -28,45 +28,25 @@
     THE SOFTWARE.
 """
 
-import sys, os
-from tkinter import messagebox
+import sys, os, time
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.api import User
+from core.api import Message
 
 
-class AccountValidator:
+class GetAllMessage:
     def __init__(self):
-        pass
-
-
-class Account:
-    def __init__(self):
-        self.UserObj = User()
-        self.UserName = None
-        self.UserPassword = None
+        self.MessageObj = Message()
+        self.ChatUniqKey = None
         self.ResultObject = None
 
-    def SignIn(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserSignIn(uname=UserName, upw=UserPassword)
+    def AllMessage(self, key: str):
+        self.ResultObject = self.MessageObj.MessageGetAllDataForChatroom(key=key)
 
         if self.ResultObject["status"] == "200":
-            messagebox.showinfo("Success", "Sign in successful")
-            return True
+            print(f"{self.ResultObject['message']}")
+
+            return self.ResultObject["data"]
         else:
-            messagebox.showinfo("Success", "Sign in failed")
-            return False
-
-        # TODO: if status code is 400, response data checking
-
-    def SignUp(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserRegister(data={
-            "UserName": UserName,
-            "UserAccountPW": UserPassword
-        })
-
-        if self.ResultObject["status"] == "201":
-            messagebox.showinfo("Success", "Register successful")
-        else:
-            messagebox.showerror("Error", "Register Failed")
+            print(f"{self.ResultObject['message']}")

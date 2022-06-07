@@ -33,40 +33,21 @@ from tkinter import messagebox
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.api import User
+from core.api import ChatRoom
 
 
-class AccountValidator:
+class CreateChatRoom:
     def __init__(self):
-        pass
-
-
-class Account:
-    def __init__(self):
-        self.UserObj = User()
-        self.UserName = None
-        self.UserPassword = None
+        self.ChatObj = ChatRoom()
         self.ResultObject = None
 
-    def SignIn(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserSignIn(uname=UserName, upw=UserPassword)
-
-        if self.ResultObject["status"] == "200":
-            messagebox.showinfo("Success", "Sign in successful")
-            return True
-        else:
-            messagebox.showinfo("Success", "Sign in failed")
-            return False
-
-        # TODO: if status code is 400, response data checking
-
-    def SignUp(self, UserName, UserPassword):
-        self.ResultObject = self.UserObj.UserRegister(data={
-            "UserName": UserName,
-            "UserAccountPW": UserPassword
+    def Create(self, UserName: str, UserUniqKey: str):
+        self.ResultObject = self.ChatObj.ChatRoomAdd(data={
+            "ParticipantUserName": UserName,
+            "ParticipantUserUniqKey": UserUniqKey
         })
 
         if self.ResultObject["status"] == "201":
-            messagebox.showinfo("Success", "Register successful")
+            messagebox.showinfo("Success", "Chat Room Create successful")
         else:
-            messagebox.showerror("Error", "Register Failed")
+            messagebox.showerror("Error", "Failed")

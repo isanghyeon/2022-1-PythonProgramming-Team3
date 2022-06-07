@@ -33,6 +33,7 @@ class User:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.post(
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
+            print(self.RESPONSE_OBJ.json())
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
 
@@ -164,8 +165,6 @@ class ChatRoom:
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["POST"], headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
 
-            print(self.RESPONSE_OBJ.json())
-
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
 
         except Exception as e:
@@ -183,7 +182,6 @@ class ChatRoom:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.patch(
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["PATCH"] + key, headers=self.REQUEST_HEADER, data=json.dumps(data)
             )
-            print(self.RESPONSE_OBJ.json())
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"]}
 
@@ -199,7 +197,7 @@ class ChatRoom:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.get(
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["GET"], headers=self.REQUEST_HEADER
             )
-            print(self.RESPONSE_OBJ.json())
+
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"], "data": self.RESPONSE_OBJ.json()["data"]}
 
         except Exception as e:

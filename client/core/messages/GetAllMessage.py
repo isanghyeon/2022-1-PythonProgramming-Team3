@@ -50,3 +50,4 @@ class GetAllMessage:
             return self.ResultObject["data"]
         else:
             print(f"{self.ResultObject['message']}")
+            return []

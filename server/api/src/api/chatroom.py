@@ -77,15 +77,7 @@ class chatDAO(object):
         return {
                    "status": 404,
                    "message": "Chat Room Not Found",
-                   "data": {
-                       "ChatUniqKey": "",
-                       "ChatName": "",
-                       "ParticipantUserName": "",
-                       "ParticipantUserUniqKey": "",
-                       "ParticipantNewUserTimestamp": "",
-                       "LastChatTimestamp": "",
-                       "CreateTimestamp": ""
-                   }
+                   "data": []
                }, 404
 
     @staticmethod
@@ -110,12 +102,27 @@ class chatDAO(object):
         if uname is None:
             return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserUniqKey == key).count() == 1 else False
 
+    @staticmethod
+    def CheckUserDuplicate(key=None, uname=None) -> bool:
+        if key is None or uname is None:
+            return False
+
+        return True if g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ParticipantUserUniqKey.like("%" + key + "%"),
+                                                               chatroomDBSchema.ParticipantUserName.like("%" + uname + "%")).count() == 1 else False
+
     def ChatRoomAddUser(self, key_chat: str, data: dict):
         self.updateData = data if (self.CheckUserWithKeyOrUName(key=None, uname=data["ParticipantUserName"]) is True and
                                    self.CheckUserWithKeyOrUName(key=data["ParticipantUserUniqKey"], uname=None) is True) and (self.CheckChatRoomWithKey(key_chat) is True) else []
 
         if not self.updateData:  # empty list checking
             return self.ErrorHandler()
+
+        if self.CheckUserDuplicate(key=self.updateData["ParticipantUserUniqKey"], uname=self.updateData["ParticipantUserName"]) is True:
+            return {
+                   "status": 404,
+                   "message": "Duplicate participant",
+                   "data": []
+               }, 404
 
         def originalData(Type: bool, key_chat: str) -> str:
             return (g.ChatDB.query(chatroomDBSchema.ParticipantUserName).filter(chatroomDBSchema.ChatUniqKey == key_chat).first()).ParticipantUserName if Type is True \
@@ -260,15 +267,12 @@ class chatDAO(object):
                 break
             return pick
 
-
-
         while True:
             ChatNameTMP = f'{self.insertData["ParticipantUserName"]}' + "의 " + f"{str(RandomChatName())}를 보호하세요."
             if self.CheckChatRoomWithChatName(name=ChatNameTMP):
                 continue
             else:
                 break
-
 
         try:
             g.ChatDB.add(
@@ -351,7 +355,7 @@ class ChatRoomInformation(Resource):
         return DAOForChatroom.ChatRoomGetUserInformation(key_user=key_user, uname=uname)
 
 
-@ns.route('<string:key_chat>')
+@ns.route('/<string:key_chat>')
 @ns.param('key_chat', 'chat key for unique identifier')
 class ChatRoomAllInformation(Resource):
     """Show a chat item"""

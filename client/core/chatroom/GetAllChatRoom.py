@@ -27,24 +27,9 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 """
+
 import sys, os
-from tkinter import messagebox
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.api import ChatRoom
-
-
-class GetAllChatRoom:
-    def __init__(self):
-        self.ChatObj = ChatRoom()
-        self.ResultObject = None
-
-    def ChatRoomGetAllData(self):
-        self.ResultObject = self.ChatObj.ChatRoomGetAllData()
-
-        if self.ResultObject["status"] == "200":
-            return self.ResultObject["data"]
-        else:
-            messagebox.showerror("Error", "Failed")
-            return False
