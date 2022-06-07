@@ -29,7 +29,25 @@
 """
 
 import sys, os
+from tkinter import messagebox
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.api import ChatRoom
+
+
+class CreateChatRoom:
+    def __init__(self):
+        self.ChatObj = ChatRoom()
+        self.ResultObject = None
+
+    def Create(self, UserName: str, UserUniqKey: str):
+        self.ResultObject = self.ChatObj.ChatRoomAdd(data={
+            "ParticipantUserName": UserName,
+            "ParticipantUserUniqKey": UserUniqKey
+        })
+
+        if self.ResultObject["status"] == "201":
+            messagebox.showinfo("Success", "Chat Room Create successful")
+        else:
+            messagebox.showerror("Error", "Failed")

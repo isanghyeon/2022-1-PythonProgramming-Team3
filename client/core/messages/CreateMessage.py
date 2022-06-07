@@ -28,12 +28,11 @@
     THE SOFTWARE.
 """
 
-import sys, os
+import sys, os, time
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.api import Message
-
 
 
 class CreateMessage:
@@ -49,3 +48,4 @@ class CreateMessage:
             print(f"{self.ResultObject['message']}")
         else:
             print(f"{self.ResultObject['message']}")
+

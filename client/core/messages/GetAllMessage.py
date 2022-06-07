@@ -28,7 +28,7 @@
     THE SOFTWARE.
 """
 
-import sys, os
+import sys, os, time
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -47,11 +47,6 @@ class GetAllMessage:
         if self.ResultObject["status"] == "200":
             print(f"{self.ResultObject['message']}")
 
-            print(self.ResultObject["data"])
+            return self.ResultObject["data"]
         else:
             print(f"{self.ResultObject['message']}")
-
-
-
-
-

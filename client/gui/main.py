@@ -11,36 +11,18 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.users.Account import Account
 from core.api import ChatRoom
+from core.chatroom.CreateChatRoom import CreateChatRoom
+from core.chatroom.GetAllChatRoom import GetAllChatRoom
+from core.messages.GetAllMessage import GetAllMessage
 
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path("./assets")
 
 LARGE_FONT = ("Verdana", 12)
 
-global chat_rooms
-chat_rooms = ChatRoom().ChatRoomGetAllData()
-
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
-
-
-def LoginVerified():
-    global ACTIVATION
-    ID = UserName.get()
-    PW = UserPassword.get()
-    Result = Account().SignIn(UserName=ID, UserPassword=PW)
-
-    ACTIVATION = True if Result else False
-
-
-def RegisterVerified():
-    global ACTIVATION
-    ID = UserName.get()
-    PW = UserPassword.get()
-    Result = Account().SignUp(UserName=ID, UserPassword=PW)
-
-    ACTIVATION = True if Result else False
 
 
 class Application(tk.Tk):
@@ -62,7 +44,8 @@ class Application(tk.Tk):
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(StartPage)
+        # self.show_frame(StartPage)
+        self.show_frame(PageOne)
 
     def getVUE(self):
         return self.von_ueberall_erreichbar
@@ -90,7 +73,23 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         global ACTIVATION, UserName, UserPassword
 
-        ACTIVATION = False
+        def LoginVerified():
+            ID = UserName.get()
+            PW = UserPassword.get()
+            Result = Account().SignIn(UserName=ID, UserPassword=PW)
+
+            print(Result)
+            return True if Result else False
+
+        def RegisterVerified():
+            ID = UserName.get()
+            PW = UserPassword.get()
+            Result = Account().SignUp(UserName=ID, UserPassword=PW)
+
+            return True if Result else False
+
+        def relative_to_assets(path: str) -> Path:
+            return ASSETS_PATH / Path(path)
 
         canvas = tk.Canvas(
             self,
@@ -136,7 +135,7 @@ class StartPage(tk.Frame):
 
         tk.Button(
             self,
-            command=lambda: controller.show_frame(PageOne),  # TODO: 로그인 구현
+            command=(lambda: controller.show_frame(PageOne)) if LoginVerified else (lambda: controller.show_frame(StartPage)),  # TODO: 로그인 구현
             bd=0,
             bg='#FFF5EB',
             activebackground='#FFF5EB',
@@ -172,8 +171,34 @@ class StartPage(tk.Frame):
 
 
 class PageOne(tk.Frame):
-
     def __init__(self, parent, controller):
+        def ClickChatListCallback():
+            return [ChatList["ParticipantUserName"] for ChatList in GetAllChatRoom().ChatRoomGetAllData()]
+
+        def ClickChatNameCallback():
+            return [ChatList["ChatName"] for ChatList in GetAllChatRoom().ChatRoomGetAllData()]
+
+        def RecvChatData():
+            # return [ChatList for ChatList in GetAllMessage().AllMessage(key="29a738741e19eb4e9aeef2a5da80ee5506e34595960ffb33752bc5f7088de2e5")]
+            data = [ChatList for ChatList in GetAllMessage().AllMessage(key="29a738741e19eb4e9aeef2a5da80ee5506e34595960ffb33752bc5f7088de2e5")]
+            data2 = [data[idx]["UserName"] for idx in range(len(data))]
+            data3 = [data[idx]["MessageData"] for idx in range(len(data))]
+
+            result = []
+            for idx in range(len(data2)):
+                result.append(f"{data2[idx]} : {data3[idx]}")
+
+            return result
+
+        def SendChatMessage():
+            pass
+
+        def CreateChatRoom():
+            pass
+
+        def relative_to_assets(path: str) -> Path:
+            return ASSETS_PATH / Path(path)
+
         tk.Frame.__init__(self, parent)
 
         canvas = tk.Canvas(
@@ -187,12 +212,12 @@ class PageOne(tk.Frame):
         )
 
         canvas.place(x=0, y=0)
-        image_image_1 = tk.PhotoImage(file=relative_to_assets("MainImage.png"), master=self)
-        canvas.create_image(
-            235.0,
-            215.0,
-            image=image_image_1
-        )
+        # image_image_1 = tk.PhotoImage(file=relative_to_assets("MainImage.png"), master=self)
+        # canvas.create_image(
+        #     235.0,
+        #     215.0,
+        #     image=image_image_1
+        # )
 
         canvas.create_rectangle(
             351.0,
@@ -245,87 +270,72 @@ class PageOne(tk.Frame):
             font=("ArialMT", 25 * -1, "bold")
         )
 
-        clist_frame = tk.Frame(self,
-                               relief="solid",
-                               bd=1,
-                               width=352,
-                               height=605)
-        clist_frame.place(x=0, y=57.6)
-
-        mlist_frame = tk.Frame(self,
-                               relief="solid",
-                               bd=1,
-                               width=352,
-                               height=605.5)
-        mlist_frame.place(x=1089, y=57.6)
-
-        message_frame = tk.Frame(self,
+        ChatListFrame = tk.Frame(self,
                                  relief="solid",
-                                 bg="#FFFFFF",
                                  bd=1,
-                                 width=739,
-                                 height=662)
-        message_frame.place(x=351, y=58)
+                                 width=352,
+                                 height=605)
+        ChatListFrame.place(x=0, y=57.6)
 
-        entry_chat = tk.Entry(message_frame, font=('Arial 16'), bd=1, relief='solid')
-        entry_chat.place(x=-1, y=603.4, width=739, height=57.6)
-
-        clist = []
-        for i in chat_rooms["data"]:
-            clist.append(i["ChatName"])
-
-        clist = tk.StringVar(value=clist)
-        chat_list = tk.Listbox(clist_frame,
-                               font="Arial 20",
-                               listvariable=clist,
-                               bg="#FFD3B4",
-                               bd=1,
-                               relief="solid",
-                               selectbackground="#BDE6F1",
-                               selectforeground="#000000"
-                               )
-        chat_list.place(x=-2, y=-2, width=354, height=607)
-
-        # mlist = []
-        # chat_name = "6e7e711536c0220199c265d07168a8b6cbc01e759dbb5fb9974a28c89cfb76bb"
-        # test = {"a":"bc", "c":"ba"}
-        # for i in chat_rooms["data"]:
-        #     mlist.append(i["ParticipantUserName"])
-
-        clist = tk.StringVar(value=clist)
-        member_list = tk.Listbox(mlist_frame,
-                                 bg="#FFAAA7",
-                                 bd=1,
+        ChatListBox = tk.Listbox(ChatListFrame,
                                  font="Arial 20",
-                                 listvariable=clist,
+                                 listvariable=tk.StringVar(value=ClickChatNameCallback()),
+                                 bg="#FFD3B4",
+                                 bd=1,
                                  relief="solid",
-                                 selectbackground="#FFE59D",
-                                 selectforeground="#000000"
+                                 selectbackground="#BDE6F1",
+                                 selectforeground="#000000",
                                  )
-        member_list.place(x=-2, y=-2, width=355, height=607)
 
-        def creatchat():
-            count = len(chat_rooms["data"])
+        ChatListBox.place(x=-2, y=-2, width=450, height=607)
 
-            if (count > 100):
-                tk.messagebox.showerror("Error", "Mort than 100 chat rooms")
-                return 0
-            else:
-                tk.messagebox.showinfo("count", count)
+        MemberListFrame = tk.Frame(self,
+                                   relief="solid",
+                                   bd=1,
+                                   width=352,
+                                   height=605.5)
+        MemberListFrame.place(x=1089, y=57.6)
 
-            data = {"ParticipantUserName": "powerman", "ParticipantUserUniqKey": "12f893bf4b52b98fc96f8d2fe318c272a6a4a8973854d86d20862ef63ee541d3"}
-            result = ChatRoom().ChatRoomAdd(data=data)
 
-            if result["status"] == "201":
-                tk.messagebox.showinfo("Success", "Create Chat Successful")
-            else:
-                tk.messagebox.showerror("Error", "Create Chat Failed")
 
-        creat_chat = tk.Button(self, command=creatchat, text="Create", font="Arial 25", bg="#FFF5EB", bd=1, activebackground="#FFF5EB", relief="solid")
-        creat_chat.place(x=0, y=662.4, width=175.5, height=57.6)
+        MessageListFrame = tk.Frame(self,
+                                    relief="solid",
+                                    bg="#FFFFFF",
+                                    bd=1,
+                                    width=739,
+                                    height=662)
+        MessageListFrame.place(x=351, y=58)
 
-        exit_chat = tk.Button(self, command=None, text="Exit", font="Arial 25", bg="#FFF5EB", bd=1, activebackground="#FFF5EB", relief="solid")
-        exit_chat.place(x=175.4, y=662.4, width=177, height=57.6)
+        MessageListBox = tk.Listbox(MessageListFrame,
+                                   bg="#000000",
+                                   bd=1,
+                                   font="Arial 30",
+                                   listvariable=tk.StringVar(value=RecvChatData()),
+                                   relief="solid",
+                                   selectbackground="#FFE59D",
+                                   selectforeground="#000000"
+                                   )
+        MessageListBox.place(x=-2, y=-2, width=900, height=607)
+
+        MemberListBox = tk.Listbox(MemberListFrame,
+                                   bg="#FFAAA7",
+                                   bd=1,
+                                   font="Arial 20",
+                                   listvariable=tk.StringVar(value=ClickChatListCallback()),
+                                   relief="solid",
+                                   selectbackground="#FFE59D",
+                                   selectforeground="#000000"
+                                   )
+        MemberListBox.place(x=-2, y=-2, width=355, height=607)
+
+        MessageEntry = tk.Entry(MessageListFrame, font='Arial 16', bd=1, relief='solid')
+        MessageEntry.place(x=-1, y=603.4, width=739, height=57.6)
+
+        CreateChat = tk.Button(self, command=None, text="Create", font="Arial 25", bg="#FFF5EB", bd=1, activebackground="#FFF5EB", relief="solid")
+        CreateChat.place(x=0, y=662.4, width=175.5, height=57.6)
+
+        ExistProgram = tk.Button(self, command=None, text="Exit", font="Arial 25", bg="#FFF5EB", bd=1, activebackground="#FFF5EB", relief="solid")
+        ExistProgram.place(x=175.4, y=662.4, width=177, height=57.6)
 
         canvas.create_rectangle(
             1089.0,
@@ -333,9 +343,10 @@ class PageOne(tk.Frame):
             1460.0,
             719.0,
             fill="#FFF5EB",
-            outline="black")
+            outline="black"
+        )
 
-        setting_photo = tk.PhotoImage(file=relative_to_assets("img.png"), master=self)
+        setting_photo = tk.PhotoImage(file="/Users/isanghyeon/Developments/Dept-DISE-2020_24/2022-1-PythonProgramming-Team3/client/gui/assets/img.png", master=self)
         setting = tk.Button(self, image=setting_photo, command=None, bg="#FFF5EB", bd=0, activebackground="#FFF5EB")
         setting.place(x=1133.77, y=673.2)
 
@@ -360,7 +371,7 @@ if __name__ == '__main__':
     app = Application()
 
     # set window size
-    app.iconbitmap(relative_to_assets("favicon.ico"))
+    app.iconbitmap("assets/favicon.ico")
     app.configure(bg="#FFF5EB")
 
     # init menubar

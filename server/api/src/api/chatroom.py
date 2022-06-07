@@ -96,6 +96,13 @@ class chatDAO(object):
         return True if g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ChatUniqKey == key).count() == 1 else False
 
     @staticmethod
+    def CheckChatRoomWithChatName(name=None) -> bool:
+        if name is None:
+            return False
+
+        return True if g.ChatDB.query(chatroomDBSchema).filter(chatroomDBSchema.ChatName == name).count() == 1 else False
+
+    @staticmethod
     def CheckUserWithKeyOrUName(key=None, uname=None) -> bool:
         if key is None:
             return True if g.UserDB.query(userDBSchema).filter(userDBSchema.UserName == uname).count() == 1 else False
@@ -230,17 +237,44 @@ class chatDAO(object):
         return ResultObject
 
     def ChatRoomCreate(self, data: dict):
+        # TMP
+        datalines = []
+
         self.insertData = data if self.CheckUserWithKeyOrUName(key=None, uname=data["ParticipantUserName"]) is True \
                                   and self.CheckUserWithKeyOrUName(key=data["ParticipantUserUniqKey"], uname=None) is True else []
 
         if not self.insertData:  # empty list checking
             return self.ErrorHandler()
 
+        def RandomChatName():
+            pick = None
+            datalines = []
+
+            with open("/usr/src/app/api/ChatroomName.txt") as f:
+                FileData = f.readlines()
+                for i in range(len(FileData)):
+                    datalines.append(FileData[i].replace("\n", ""))
+
+            while True:
+                pick = random.choice(datalines)
+                break
+            return pick
+
+
+
+        while True:
+            ChatNameTMP = f'{self.insertData["ParticipantUserName"]}' + "의 " + f"{str(RandomChatName())}를 보호하세요."
+            if self.CheckChatRoomWithChatName(name=ChatNameTMP):
+                continue
+            else:
+                break
+
+
         try:
             g.ChatDB.add(
                 chatroomDBSchema(
                     ChatUniqKey=hashlib.sha256((str(time.time()) + "-" + self.insertData["ParticipantUserUniqKey"]).encode()).hexdigest(),
-                    ChatName=f'{self.insertData["ParticipantUserName"]}' + "\'s " + f"{str(random.randint(1111111, 9999999))}th" + " chat room",
+                    ChatName=ChatNameTMP,
                     ParticipantUserName=self.insertData["ParticipantUserName"],
                     ParticipantUserUniqKey=self.insertData["ParticipantUserUniqKey"],
                     ParticipantNewUserTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

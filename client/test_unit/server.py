@@ -28,51 +28,9 @@
     THE SOFTWARE.
 """
 import socket
+from select import *
 import threading
 from queue import Queue
-
-
-class AppSocketMiddleware:
-    def __init__(self):
-        self.Host = ''
-        self.Port = 45999
-
-        self.socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socketSendQueue = Queue()
-
-        self.count = 0
-        self.socketEnteredGroup = []
-
-        self.ReceviedData = None
-        self.SendData = None
-        self.Message = None
-
-    def SocketInitialized(self):
-        self.socketServer.bind((self.Host, self.Port))
-        self.socketServer.listen(10)
-
-    def SocketSender(self):
-        while True:
-            try:
-                self.ReceviedData = self.socketSendQueue.get()
-
-                if self.ReceviedData == "Group Changed":
-                    print("Group Changed")
-                    break
-
-                for ConnObj in self.socketEnteredGroup:
-                    self.Message = 'Client' + str(self.ReceviedData[2]) + ' >> ' + str(self.ReceviedData[0])
-
-                    if self.ReceviedData[1] != ConnObj:
-                        ConnObj.send(bytes(self.Message.encode()))
-                    else:
-                        pass
-            except:
-                pass
-
-    def socketReceiver(self):
-        while True:
-            pass
 
 
 def Send(group, send_queue):
@@ -95,12 +53,6 @@ def Send(group, send_queue):
             pass
 
 
-def Recv(conn, count, send_queue):
-    print('Thread Recv' + str(count) + ' Start')
-    while True:
-        data = conn.recv(1024).decode()
-        send_queue.put([data, conn, count])
-
 
 def Recv(conn, count, send_queue):
     print('Thread Recv' + str(count) + ' Start')
@@ -112,13 +64,12 @@ def Recv(conn, count, send_queue):
 if __name__ == '__main__':
     send_queue = Queue()
     HOST = ''
-    PORT = 45100
+    PORT = 9000
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.bind((HOST, PORT))
     server_sock.listen(10)
     count = 0
     group = []
-
     while True:
         count = count + 1
         conn, addr = server_sock.accept()
@@ -134,5 +85,8 @@ if __name__ == '__main__':
             thread1 = threading.Thread(target=Send, args=(group, send_queue,))
             thread1.start()
 
+
         thread2 = threading.Thread(target=Recv, args=(conn, count, send_queue,))
         thread2.start()
+
+
