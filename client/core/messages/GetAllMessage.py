@@ -27,3 +27,31 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 """
+
+import sys, os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from core.api import Message
+
+
+class GetAllMessage:
+    def __init__(self):
+        self.MessageObj = Message()
+        self.ChatUniqKey = None
+        self.ResultObject = None
+
+    def AllMessage(self, key: str):
+        self.ResultObject = self.MessageObj.MessageGetAllDataForChatroom(key=key)
+
+        if self.ResultObject["status"] == "200":
+            print(f"{self.ResultObject['message']}")
+
+            print(self.ResultObject["data"])
+        else:
+            print(f"{self.ResultObject['message']}")
+
+
+
+
+

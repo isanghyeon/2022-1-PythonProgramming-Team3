@@ -27,22 +27,37 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 """
+import socket
+import threading
 
-import time, sys, os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+def Send(client_sock):
+    while True:
+        send_data = bytes(input().encode())
+        client_sock.send(send_data + b"key=cccccccccccccccccccccccccccccccccccc")
 
-from core.messages import (
-    CreateMessage, GetAllMessage, GetUserMessage
-)
 
-while True:
-    Result = CreateMessage.CreateMessage()
-    Result.AddMessage(data={
-        "UserUniqKey": "b3d39b9aedbd4a3a6eb93c192890c1e47b11f209fe42f1e2eefeabdf2ef90a1c",
-        "ChatUniqKey": "894906d45a8ddb9ee4b611a019f7bcef6c1dca7ed0b13bcb922dfbd87528c45c",
-        "UserName": "isanghyeon",
-        "MessageData": "heheheheheheheheheheheheh"
-    })
+def Recv(client_sock):
+    while True:
+        recv_data = client_sock.recv(1024).decode()
+        print(recv_data)
 
-    time.sleep(0.5)
+
+if __name__ == '__main__':
+    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Host = '220.69.200.173'
+    Port = 45100
+    try:
+        client_sock.connect((Host, Port))
+        print('Connecting to ', Host, Port)
+
+        thread1 = threading.Thread(target=Send, args=(client_sock,))
+        thread1.start()
+
+        thread2 = threading.Thread(target=Recv, args=(client_sock,))
+        thread2.start()
+    except Exception as e:
+        print(e)
+        thread1.join()
+        thread2.join()
+        client_sock.close()

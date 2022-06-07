@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
     Python Programming Project - Team 3
     ~~~~~~~~~~~~~~
@@ -28,21 +26,11 @@
     THE SOFTWARE.
 """
 
-import time, sys, os
+from pathlib import Path
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_PATH = Path(__file__).parent
+ASSETS_PATH = OUTPUT_PATH / Path("./assets")
 
-from core.messages import (
-    CreateMessage, GetAllMessage, GetUserMessage
-)
 
-while True:
-    Result = CreateMessage.CreateMessage()
-    Result.AddMessage(data={
-        "UserUniqKey": "b3d39b9aedbd4a3a6eb93c192890c1e47b11f209fe42f1e2eefeabdf2ef90a1c",
-        "ChatUniqKey": "894906d45a8ddb9ee4b611a019f7bcef6c1dca7ed0b13bcb922dfbd87528c45c",
-        "UserName": "isanghyeon",
-        "MessageData": "heheheheheheheheheheheheh"
-    })
-
-    time.sleep(0.5)
+def relative_to_assets(path: str) -> Path:
+    return ASSETS_PATH / Path(path)

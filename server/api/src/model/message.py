@@ -43,19 +43,15 @@ class message(MessageModel.Model):
     UserUniqKey = MessageModel.Column(MessageModel.VARCHAR(100), nullable=False)
     ChatUniqKey = MessageModel.Column(MessageModel.VARCHAR(100), nullable=False)
     UserName = MessageModel.Column(MessageModel.VARCHAR(50), nullable=False)
-    MessageType = MessageModel.Column(MessageModel.BOOLEAN, default=0, nullable=True)
     MessageData = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
-    MediaDataPath = MessageModel.Column(MessageModel.TEXT, default=0, nullable=True)
     MessageTimestamp = MessageModel.Column(MessageModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def __init__(self, UserUniqKey, ChatUniqKey, UserName, MessageType, MessageData, MediaDataPath, MessageTimestamp, **kwargs):
+    def __init__(self, UserUniqKey, ChatUniqKey, UserName, MessageData, MessageTimestamp, **kwargs):
         self.UserUniqKey = UserUniqKey
         self.ChatUniqKey = ChatUniqKey
         self.UserName = UserName
-        self.MessageType = MessageType
         self.MessageData = MessageData
-        self.MediaDataPath = MediaDataPath
         self.MessageTimestamp = MessageTimestamp
 
     def __repr__(self):
-        return f"<user('{self.UserUniqKey}', '{self.ChatUniqKey}', '{self.UserName}', '{self.MessageType}', '{self.MessageData}', '{self.MediaDataPath}', '{self.MessageTimestamp}')>"
+        return f"<user('{self.UserUniqKey}', '{self.ChatUniqKey}', '{self.UserName}', '{self.MessageData}', '{self.MessageTimestamp}')>"

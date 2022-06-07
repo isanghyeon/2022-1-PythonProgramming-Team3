@@ -41,14 +41,16 @@ class chatroom(ChattingModel.Model):
 
     id = ChattingModel.Column(ChattingModel.INTEGER, primary_key=True, autoincrement=True)
     ChatUniqKey = ChattingModel.Column(ChattingModel.VARCHAR(100), unique=True, nullable=True)
+    ChatName = ChattingModel.Column(ChattingModel.VARCHAR(100), default="none", nullable=False)
     ParticipantUserName = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
     ParticipantUserUniqKey = ChattingModel.Column(ChattingModel.TEXT, default="none", nullable=False)
     ParticipantNewUserTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     LastChatTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     CreateTimestamp = ChattingModel.Column(ChattingModel.TIMESTAMP, default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-    def __init__(self, ChatUniqKey, ParticipantUserName, ParticipantUserUniqKey, ParticipantNewUserTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
+    def __init__(self, ChatUniqKey, ChatName, ParticipantUserName, ParticipantUserUniqKey, ParticipantNewUserTimestamp, LastChatTimestamp, CreateTimestamp, **kwargs):
         self.ChatUniqKey = ChatUniqKey
+        self.ChatName = ChatName
         self.ParticipantUserName = ParticipantUserName
         self.ParticipantUserUniqKey = ParticipantUserUniqKey
         self.ParticipantNewUserTimestamp = ParticipantNewUserTimestamp
@@ -56,4 +58,4 @@ class chatroom(ChattingModel.Model):
         self.CreateTimestamp = CreateTimestamp
 
     def __repr__(self):
-        return f"<user('{self.ChatUniqKey}', '{self.ParticipantUserName}', '{self.ParticipantUserUniqKey}', '{self.ParticipantNewUserTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"
+        return f"<user('{self.ChatUniqKey}', '{self.ChatName}', '{self.ParticipantUserName}', '{self.ParticipantUserUniqKey}', '{self.ParticipantNewUserTimestamp}', '{self.LastChatTimestamp}', '{self.CreateTimestamp}')>"

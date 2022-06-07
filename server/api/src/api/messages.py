@@ -49,10 +49,7 @@ msgNSBaseModel = ns.model(
         "UserUniqKey": fields.String(required=True, description=""),
         "ChatUniqKey": fields.String(required=True, description=""),
         "UserName": fields.String(required=True, description=""),
-        "MessageType": fields.Boolean(required=False, description=""),
-        "MessageData": fields.String(required=False, description=""),
-        "MediaDataPath": fields.String(required=False, description=""),
-        "MessageTimestamp": fields.DateTime(readonly=True, description="")
+        "MessageData": fields.String(required=False, description="")
     }
 )
 
@@ -80,9 +77,7 @@ class msgDAO(object):
                        "UserUniqKey": "",
                        "ChatUniqKey": "",
                        "UserName": "",
-                       "MessageType": "",
                        "MessageData": "",
-                       "MediaDataPath": "",
                        "MessageTimestamp": ""
                    }, ]
                }, 404
@@ -111,9 +106,7 @@ class msgDAO(object):
                 "UserUniqKey": f"{self.selectData[idx].UserUniqKey}",
                 "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
                 "UserName": f"{self.selectData[idx].UserName}",
-                "MessageType": f"{self.selectData[idx].MessageType}",
                 "MessageData": f"{self.selectData[idx].MessageData}",
-                "MediaDataPath": f"{self.selectData[idx].MediaDataPath}",
                 "MessageTimestamp": f"{self.selectData[idx].MessageTimestamp}"
             })
 
@@ -137,9 +130,7 @@ class msgDAO(object):
                 "UserUniqKey": f"{self.selectData[idx].UserUniqKey}",
                 "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
                 "UserName": f"{self.selectData[idx].UserName}",
-                "MessageType": f"{self.selectData[idx].MessageType}",
                 "MessageData": f"{self.selectData[idx].MessageData}",
-                "MediaDataPath": f"{self.selectData[idx].MediaDataPath}",
                 "MessageTimestamp": f"{self.selectData[idx].MessageTimestamp}"
             })
 
@@ -157,13 +148,11 @@ class msgDAO(object):
                     UserUniqKey=self.insertData["UserUniqKey"],
                     ChatUniqKey=self.insertData["ChatUniqKey"],
                     UserName=self.insertData["UserName"],
-                    MessageType=self.insertData["MessageType"],
                     MessageData=self.insertData["MessageData"],
-                    MediaDataPath=self.insertData["MediaDataPath"],
                     MessageTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 )
             )
-            g.MsgDB.query(chatroomDBSchema.LastChatTimestamp).filter(
+            g.ChatDB.query(chatroomDBSchema).filter(
                 chatroomDBSchema.ChatUniqKey == self.insertData["ChatUniqKey"]
             ).update(
                 {
@@ -180,26 +169,23 @@ class msgDAO(object):
                            "UserUniqKey": "",
                            "ChatUniqKey": "",
                            "UserName": "",
-                           "MessageType": "",
                            "MessageData": "",
-                           "MediaDataPath": "",
                            "MessageTimestamp": ""
                        }, ]
                    }, 201
 
         except:
             g.MsgDB.rollback()
+            g.ChatDB.rollback()
 
         return {
                    "status": 400,
                    "message": "failed",
                    "data": [{
-                       "UserUniqKey": f"{e}",
+                       "UserUniqKey": "",
                        "ChatUniqKey": "",
                        "UserName": "",
-                       "MessageType": "",
                        "MessageData": "",
-                       "MediaDataPath": "",
                        "MessageTimestamp": ""
                    }, ]
                }, 400

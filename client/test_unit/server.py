@@ -27,18 +27,60 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 """
-
 import socket
 import threading
 from queue import Queue
+
+
+class AppSocketMiddleware:
+    def __init__(self):
+        self.Host = ''
+        self.Port = 45999
+
+        self.socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketSendQueue = Queue()
+
+        self.count = 0
+        self.socketEnteredGroup = []
+
+        self.ReceviedData = None
+        self.SendData = None
+        self.Message = None
+
+    def SocketInitialized(self):
+        self.socketServer.bind((self.Host, self.Port))
+        self.socketServer.listen(10)
+
+    def SocketSender(self):
+        while True:
+            try:
+                self.ReceviedData = self.socketSendQueue.get()
+
+                if self.ReceviedData == "Group Changed":
+                    print("Group Changed")
+                    break
+
+                for ConnObj in self.socketEnteredGroup:
+                    self.Message = 'Client' + str(self.ReceviedData[2]) + ' >> ' + str(self.ReceviedData[0])
+
+                    if self.ReceviedData[1] != ConnObj:
+                        ConnObj.send(bytes(self.Message.encode()))
+                    else:
+                        pass
+            except:
+                pass
+
+    def socketReceiver(self):
+        while True:
+            pass
 
 
 def Send(group, send_queue):
     print('Thread Send Start')
     while True:
         try:
+
             recv = send_queue.get()
-            print(recv)
             if recv == 'Group Changed':
                 print('Group Changed')
                 break
@@ -60,10 +102,17 @@ def Recv(conn, count, send_queue):
         send_queue.put([data, conn, count])
 
 
+def Recv(conn, count, send_queue):
+    print('Thread Recv' + str(count) + ' Start')
+    while True:
+        data = conn.recv(1024).decode()
+        send_queue.put([data, conn, count])
+
+
 if __name__ == '__main__':
     send_queue = Queue()
-    HOST = 'localhost'
-    PORT = 9000
+    HOST = ''
+    PORT = 45100
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.bind((HOST, PORT))
     server_sock.listen(10)
@@ -72,10 +121,10 @@ if __name__ == '__main__':
 
     while True:
         count = count + 1
-        print(server_sock)
         conn, addr = server_sock.accept()
         group.append(conn)
         print('Connected ' + str(addr))
+
         if count > 1:
             send_queue.put('Group Changed')
             thread1 = threading.Thread(target=Send, args=(group, send_queue,))

@@ -30,7 +30,7 @@
 
 from flask import g
 from flask_restx import Resource, fields, Namespace, model
-import sys, os, json, datetime, hashlib, time
+import sys, os, json, datetime, hashlib, time, random
 from sqlalchemy import func
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -79,6 +79,7 @@ class chatDAO(object):
                    "message": "Chat Room Not Found",
                    "data": {
                        "ChatUniqKey": "",
+                       "ChatName": "",
                        "ParticipantUserName": "",
                        "ParticipantUserUniqKey": "",
                        "ParticipantNewUserTimestamp": "",
@@ -129,6 +130,7 @@ class chatDAO(object):
                        "message": "success",
                        "data": {
                            "ChatUniqKey": "",
+                           "ChatName": "",
                            "ParticipantUserName": "",
                            "ParticipantUserUniqKey": "",
                            "ParticipantNewUserTimestamp": "",
@@ -145,6 +147,7 @@ class chatDAO(object):
                    "message": "failed",
                    "data": {
                        "ChatUniqKey": "",
+                       "ChatName": "",
                        "ParticipantUserName": "",
                        "ParticipantUserUniqKey": "",
                        "ParticipantNewUserTimestamp": "",
@@ -168,6 +171,7 @@ class chatDAO(object):
         for idx in range(len(self.selectData)):
             ResultObject["data"].append({
                 "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "ChatName": f"{self.selectData[idx].ChatName}",
                 "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
                 "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
                 "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
@@ -193,6 +197,7 @@ class chatDAO(object):
         for idx in range(len(self.selectData)):
             ResultObject["data"].append({
                 "ChatUniqKey": f"{self.selectData[idx].ChatUniqKey}",
+                "ChatName": f"{self.selectData[idx].ChatName}",
                 "ParticipantUserName": f"{self.selectData[idx].ParticipantUserName}",
                 "ParticipantUserUniqKey": f"{self.selectData[idx].ParticipantUserUniqKey}",
                 "ParticipantNewUserTimestamp": f"{self.selectData[idx].ParticipantNewUserTimestamp}",
@@ -213,6 +218,7 @@ class chatDAO(object):
             "message": "success",
             "data": {
                 "ChatUniqKey": f"{self.selectData.ChatUniqKey}",
+                "ChatName": f"{self.selectData.ChatName}",
                 "ParticipantUserName": f"{self.selectData.ParticipantUserName}",
                 "ParticipantUserUniqKey": f"{self.selectData.ParticipantUserUniqKey}",
                 "ParticipantNewUserTimestamp": f"{self.selectData.ParticipantNewUserTimestamp}",
@@ -234,6 +240,7 @@ class chatDAO(object):
             g.ChatDB.add(
                 chatroomDBSchema(
                     ChatUniqKey=hashlib.sha256((str(time.time()) + "-" + self.insertData["ParticipantUserUniqKey"]).encode()).hexdigest(),
+                    ChatName=f'{self.insertData["ParticipantUserName"]}' + "\'s " + f"{str(random.randint(1111111, 9999999))}th" + " chat room",
                     ParticipantUserName=self.insertData["ParticipantUserName"],
                     ParticipantUserUniqKey=self.insertData["ParticipantUserUniqKey"],
                     ParticipantNewUserTimestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -248,6 +255,7 @@ class chatDAO(object):
                        "message": "success",
                        "data": {
                            "ChatUniqKey": "",
+                           "ChatName": "",
                            "ParticipantUserName": "",
                            "ParticipantUserUniqKey": "",
                            "ParticipantNewUserTimestamp": "",
@@ -264,6 +272,7 @@ class chatDAO(object):
                    "message": "failed",
                    "data": {
                        "ChatUniqKey": "",
+                       "ChatName": "",
                        "ParticipantUserName": "",
                        "ParticipantUserUniqKey": "",
                        "ParticipantNewUserTimestamp": "",

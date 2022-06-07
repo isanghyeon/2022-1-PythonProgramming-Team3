@@ -114,6 +114,7 @@ class Message:
             self.RESPONSE_OBJ = self.REQUEST_OBJ.get(
                 url=self.URL_PREFIX + self.URL_PREFIX_TYPE["GET"] + key, headers=self.REQUEST_HEADER
             )
+            print(self.RESPONSE_OBJ.json()["status"])
 
             return {"status": self.RESPONSE_OBJ.json()["status"], "message": self.RESPONSE_OBJ.json()["message"], "data": self.RESPONSE_OBJ.json()["data"]}
 
