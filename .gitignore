@@ -1,5 +1,7 @@
 
 venv/*
 .idea/
+GUI/*
 .DS_Store
-tlqklf
+
+
